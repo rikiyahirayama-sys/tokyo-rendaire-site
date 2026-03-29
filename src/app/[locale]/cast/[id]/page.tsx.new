@@ -1,0 +1,133 @@
+import { useTranslations } from "next-intl";
+import { getTranslations, unstable_setRequestLocale } from "next-intl/server";
+import Link from "next/link";
+import { readSiteData } from "@/lib/store";
+import { t as tl } from "@/lib/locale-helper";
+import CastDetailClient from "./CastDetailClient";
+import { notFound } from "next/navigation";
+
+export async function generateMetadata({
+    params: { locale, id },
+}: {
+    params: { locale: string; id: string };
+}) {
+    const t = await getTranslations({ locale, namespace: "cast" });
+    const siteData = readSiteData();
+    const cast = siteData.casts.find((c) => c.id === id);
+    if (!cast) return { title: "Not Found" };
+    return {
+        title: `${cast.name} — ${t("title")} | TOKYO RENDAIRE`,
+        description: tl(cast.profile, locale),
+    };
+}
+
+export default function CastDetailPage({
+    params: { locale, id },
+}: {
+    params: { locale: string; id: string };
+}) {
+    unstable_setRequestLocale(locale);
+    const t = useTranslations("cast");
+    const tcom = useTranslations("common");
+    const siteData = readSiteData();
+    const cast = siteData.casts.find((c) => c.id === id);
+
+    if (!cast) notFound();
+
+    return (
+        <div className="pt-24 pb-16 md:pt-28 md:pb-20">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Back link */}
+                <Link
+                    href={`/${locale}/cast`}
+                    className="inline-flex items-center gap-1 text-dark-400 hover:text-white text-sm mb-6 transition-colors"
+                >
+                    ← {tcom("back")}
+                </Link>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Left: Images */}
+                    <div>
+                        <CastDetailClient images={cast.images} name={cast.name} />
+                    </div>
+
+                    {/* Right: Details */}
+                    <div>
+                        <div className="flex items-center gap-3 mb-4">
+                            <h1 className="font-display text-3xl font-bold text-white">{cast.name}</h1>
+                            {cast.isNew && (
+                                <span className="px-2 py-1 bg-primary-500 text-white text-xs font-bold rounded">{t("newArrival")}</span>
+                            )}
+                            {cast.isRecommended && (
+                                <span className="px-2 py-1 bg-gold-500 text-dark-950 text-xs font-bold rounded">{t("recommended")}</span>
+                            )}
+                        </div>
+
+                        {/* Availability */}
+                        <div className="mb-6">
+                            <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${cast.available ? "bg-green-500/10 text-green-400 border border-green-500/30" : "bg-dark-800 text-dark-400 border border-dark-700/30"}`}>
+                                {cast.available && <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
+                                {cast.available ? t("available") : t("unavailable")}
+                                {cast.available && cast.availableFrom && (
+                                    <span className="text-dark-400 text-xs ml-1">
+                                        {cast.availableFrom} - {cast.availableUntil}
+                                    </span>
+                                )}
+                            </span>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="card p-5 mb-6">
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="text-center">
+                                    <p className="text-dark-500 text-xs mb-1">{t("age")}</p>
+                                    <p className="text-white font-semibold">{cast.age}</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-dark-500 text-xs mb-1">{t("height")}</p>
+                                    <p className="text-white font-semibold">{cast.height}cm</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-dark-500 text-xs mb-1">3 Size</p>
+                                    <p className="text-white font-semibold text-sm">B{cast.bust}({cast.cup}) W{cast.waist} H{cast.hip}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Profile */}
+                        {tl(cast.profile, locale) && (
+                            <div className="mb-6">
+                                <h2 className="text-white font-semibold mb-2">{t("profile")}</h2>
+                                <p className="text-dark-300 leading-relaxed">{tl(cast.profile, locale)}</p>
+                            </div>
+                        )}
+
+                        {/* Store Comment */}
+                        {tl(cast.storeComment, locale) && (
+                            <div className="card p-4 mb-6 border-l-2 border-primary-600">
+                                <p className="text-dark-300 text-sm leading-relaxed">{tl(cast.storeComment, locale)}</p>
+                            </div>
+                        )}
+
+                        {/* Cast Comment */}
+                        {tl(cast.castComment, locale) && (
+                            <div className="card p-4 mb-6 border-l-2 border-gold-500">
+                                <p className="text-dark-300 text-sm italic leading-relaxed">&ldquo;{tl(cast.castComment, locale)}&rdquo;</p>
+                            </div>
+                        )}
+
+                        {/* Book CTA */}
+                        {cast.available && (
+                            <Link
+                                href={`/${locale}/booking?cast=${cast.id}`}
+                                className="btn-primary w-full text-center"
+                            >
+                                {t("bookThisCast")}
+                            </Link>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

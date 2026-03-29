@@ -1,0 +1,198 @@
+import { useTranslations } from "next-intl";
+import { getTranslations, unstable_setRequestLocale } from "next-intl/server";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import LINEButton from "@/components/LINEButton";
+import TelegramButton from "@/components/TelegramButton";
+
+export async function generateMetadata({
+    params: { locale },
+}: {
+    params: { locale: string };
+}) {
+    const t = await getTranslations({ locale, namespace: "recruit" });
+    return {
+        title: `${t("title")} — TOKYO RENDAIRE`,
+        description: t("heroSubtitle"),
+    };
+}
+
+export default function RecruitPage({
+    params: { locale },
+}: {
+    params: { locale: string };
+}) {
+    unstable_setRequestLocale(locale);
+    const t = useTranslations("recruit");
+
+    return (
+        <div>
+            {/* Hero */}
+            <section className="relative pt-24 pb-12 md:pt-28 md:pb-16 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-dark-950 via-dark-900 to-dark-950" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-900/20 via-transparent to-transparent" />
+                <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <span className="inline-block px-4 py-1.5 bg-primary-800/30 border border-primary-700/40 rounded-full text-primary-300 text-sm font-medium mb-6">
+                        {t("hiringNow")}
+                    </span>
+                    <h1 className="section-title mb-4">{t("heroTitle")}</h1>
+                    <p className="text-dark-300 text-lg max-w-2xl mx-auto">{t("heroSubtitle")}</p>
+                </div>
+            </section>
+
+            {/* Key Stats */}
+            <section className="py-12 bg-dark-900/40">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="card p-5 text-center">
+                            <p className="text-3xl font-bold text-gold-400 mb-1">70%</p>
+                            <p className="text-dark-400 text-xs">{t("backRate")}</p>
+                        </div>
+                        <div className="card p-5 text-center">
+                            <p className="text-3xl font-bold text-gold-400 mb-1">80%</p>
+                            <p className="text-dark-400 text-xs">{t("nominationBackRate")}</p>
+                        </div>
+                        <div className="card p-5 text-center">
+                            <p className="text-3xl font-bold text-gold-400 mb-1">100%</p>
+                            <p className="text-dark-400 text-xs">{t("transport")}</p>
+                        </div>
+                        <div className="card p-5 text-center">
+                            <p className="text-3xl font-bold text-gold-400 mb-1">翌日</p>
+                            <p className="text-dark-400 text-xs">{t("payment")}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Earnings Simulation */}
+            <section className="py-16">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="section-title text-center mb-8">{t("earningSimTitle")}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="card p-6 text-center">
+                            <p className="text-dark-400 text-sm mb-2">{t("simPerSession")}</p>
+                            <p className="text-3xl font-bold text-white mb-1">¥33,600</p>
+                            <p className="text-dark-500 text-xs">{t("simNotePerSession")}</p>
+                        </div>
+                        <div className="card p-6 text-center">
+                            <p className="text-dark-400 text-sm mb-2">{t("simDaily")}</p>
+                            <p className="text-3xl font-bold text-white mb-1">¥134,400</p>
+                            <p className="text-dark-500 text-xs">{t("simNoteDaily")}</p>
+                        </div>
+                        <div className="card p-6 text-center border-2 border-gold-500/30">
+                            <p className="text-dark-400 text-sm mb-2">{t("simMonthly")}</p>
+                            <p className="text-3xl font-bold text-gold-400 mb-1">¥2,688,000</p>
+                            <p className="text-dark-500 text-xs">{t("simNoteMonthly")}</p>
+                        </div>
+                    </div>
+                    <p className="text-center text-dark-400 text-sm mt-4">{t("simTips")}</p>
+                </div>
+            </section>
+
+            {/* Why Us */}
+            <section className="py-16 bg-dark-900/40">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="section-title text-center mb-8">{t("whyUs")}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="card p-6">
+                            <h3 className="text-white font-bold text-lg mb-2">{t("earning")}</h3>
+                            <p className="text-dark-300 text-sm">{t("earningDesc")}</p>
+                        </div>
+                        <div className="card p-6">
+                            <h3 className="text-white font-bold text-lg mb-2">{t("schedule")}</h3>
+                            <p className="text-dark-300 text-sm">{t("scheduleDesc")}</p>
+                        </div>
+                        <div className="card p-6">
+                            <h3 className="text-white font-bold text-lg mb-2">{t("transport")}</h3>
+                            <p className="text-dark-300 text-sm">{t("transportDesc")}</p>
+                        </div>
+                        <div className="card p-6">
+                            <h3 className="text-white font-bold text-lg mb-2">{t("payment")}</h3>
+                            <p className="text-dark-300 text-sm">{t("paymentDesc")}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* How It Works */}
+            <section className="py-16">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="section-title text-center mb-8">{t("howItWorks")}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        {[1, 2, 3, 4].map((step) => (
+                            <div key={step} className="text-center">
+                                <div className="w-12 h-12 rounded-full bg-primary-800/50 border border-primary-700/40 flex items-center justify-center mx-auto mb-3">
+                                    <span className="text-primary-300 font-bold">{step}</span>
+                                </div>
+                                <h3 className="text-white font-semibold mb-2">{t(`step${step}Title`)}</h3>
+                                <p className="text-dark-400 text-sm">{t(`step${step}Desc`)}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Benefits */}
+            <section className="py-16 bg-dark-900/40">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="section-title text-center mb-8">{t("benefits")}</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+                            <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-lg bg-dark-800/50 border border-dark-700/30">
+                                <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                <span className="text-dark-200 text-sm">{t(`benefit${i}`)}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Requirements */}
+            <section className="py-16">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="section-title text-center mb-8">{t("requirements")}</h2>
+                    <div className="card p-6">
+                        <ul className="space-y-3">
+                            {[1, 2, 3, 4].map((i) => (
+                                <li key={i} className="flex items-center gap-3 text-dark-200 text-sm">
+                                    <span className="text-dark-500">•</span>
+                                    {t(`req${i}`)}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            {/* FAQ */}
+            <section className="py-16 bg-dark-900/40">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 className="section-title text-center mb-8">{t("faqTitle")}</h2>
+                    <div className="space-y-4">
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="card p-5">
+                                <h3 className="text-white font-semibold mb-2">{t(`faq${i}q`)}</h3>
+                                <p className="text-dark-300 text-sm">{t(`faq${i}a`)}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Apply CTA */}
+            <section className="py-16">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h2 className="section-title mb-4">{t("apply")}</h2>
+                    <p className="text-dark-300 mb-8">{t("applyDesc")}</p>
+                    <div className="flex flex-wrap gap-4 justify-center">
+                        <WhatsAppButton text={t("applyWhatsApp")} />
+                        <LINEButton text={t("applyLINE")} />
+                        <TelegramButton text={t("applyTelegram")} />
+                    </div>
+                    <p className="text-dark-500 text-sm mt-6">{t("confidential")}</p>
+                </div>
+            </section>
+        </div>
+    );
+}

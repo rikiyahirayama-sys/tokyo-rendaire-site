@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Tokyo Rendaire — 管理画面</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ===== リセット・CSS変数 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --bg: #0f0f12;
+            --surface: #1a1a22;
+            --surface2: #22222e;
+            --border: #2a2a38;
+            --accent: #C9A96E;
+            --accent-light: #DFC494;
+            --burgundy: #5B1A2A;
+            --text: #e8e6e3;
+            --text-muted: #8a8890;
+            --green: #2ecc71;
+            --red: #e74c3c;
+            --blue: #3498db;
+            --yellow: #f39c12
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none
+        }
+
+        button {
+            cursor: pointer;
+            font-family: inherit
+        }
+
+        input,
+        textarea,
+        select {
+            font-family: inherit;
+            color: var(--text)
+        }
+
+        /* ===== ログイン画面 ===== */
+        #login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0e, #1a0a0e)
+        }
+
+        .login-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 48px 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center
+        }
+
+        .login-box .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 3px;
+            margin-bottom: 8px
+        }
+
+        .login-box .sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 32px
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 15px;
+            margin-bottom: 16px
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: var(--accent)
+        }
+
+        .login-box .login-err {
+            color: var(--red);
+            font-size: 13px;
+            margin-bottom: 12px;
+            display: none
+        }
+
+        /* ===== 共通ボタン ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all .2s
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #0f0f12
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-light)
+        }
+
+        .btn-danger {
+            background: var(--red);
+            color: #fff
+        }
+
+        .btn-danger:hover {
+            opacity: .85
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border)
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent)
+        }
+
+        .btn-success {
+            background: var(--green);
+            color: #fff
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 13px
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed
+        }
+
+        .btn .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin .6s linear infinite
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        /* ===== メイン画面 ===== */
+        #main-screen {
+            display: none
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border)
+        }
+
+        .top-bar .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 2px
+        }
+
+        .top-bar .logout {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer
+        }
+
+        .top-bar .logout:hover {
+            color: var(--red)
+        }
+
+        /* ===== タブナビ ===== */
+        .tab-nav {
+            display: flex;
+            gap: 0;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch
+        }
+
+        .tab-nav button {
+            flex: 1;
+            min-width: 120px;
+            padding: 14px 12px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all .2s
+        }
+
+        .tab-nav button.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            background: var(--surface2)
+        }
+
+        .tab-nav button:hover {
+            color: var(--text);
+            background: var(--surface2)
+        }
+
+        /* ===== タブコンテンツ ===== */
+        .tab-content {
+            display: none;
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto
+        }
+
+        .tab-content.active {
+            display: block
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--accent-light)
+        }
+
+        /* ===== カード共通 ===== */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px
+        }
+
+        /* ===== トースト通知 ===== */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .toast {
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #fff;
+            animation: slideIn .3s;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .4)
+        }
+
+        .toast-success {
+            background: var(--green)
+        }
+
+        .toast-error {
+            background: var(--red)
+        }
+
+        .toast-warning {
+            background: var(--yellow);
+            color: #333
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1
+            }
+        }
+
+        /* ===== モーダル ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .7);
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn .2s
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 700px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto
+        }
+
+        .modal h2 {
+            font-size: 18px;
+            color: var(--accent);
+            margin-bottom: 20px
+        }
+
+        .modal .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        /* ===== フォーム ===== */
+        .form-group {
+            margin-bottom: 16px
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent)
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px
+        }
+
+        .form-row .form-group {
+            flex: 1
+        }
+
+        /* ===== キャスト管理 ===== */
+        .cast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px
+        }
+
+        .cast-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: border-color .2s
+        }
+
+        .cast-card:hover {
+            border-color: var(--accent)
+        }
+
+        .cast-card .photo {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: var(--surface2)
+        }
+
+        .cast-card .info {
+            padding: 16px
+        }
+
+        .cast-card .name {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 4px
+        }
+
+        .cast-card .specs {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px
+        }
+
+        .cast-card .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700
+        }
+
+        .status-出勤中 {
+            background: var(--green);
+            color: #fff
+        }
+
+        .status-待機中 {
+            background: var(--blue);
+            color: #fff
+        }
+
+        .status-休み {
+            background: var(--text-muted);
+            color: #fff
+        }
+
+        .status-新人 {
+            background: var(--accent);
+            color: #0f0f12
+        }
+
+        /* ===== トグルスイッチ ===== */
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 26px
+        }
+
+        .toggle input {
+            display: none
+        }
+
+        .toggle .slider {
+            position: absolute;
+            inset: 0;
+            background: var(--border);
+            border-radius: 26px;
+            transition: .3s;
+            cursor: pointer
+        }
+
+        .toggle .slider:before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: .3s
+        }
+
+        .toggle input:checked+.slider {
+            background: var(--green)
+        }
+
+        .toggle input:checked+.slider:before {
+            transform: translateX(22px)
+        }
+
+        /* ===== SNSクイックボタングリッド ===== */
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 32px
+        }
+
+        .quick-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .quick-btn:hover {
+            border-color: var(--accent);
+            background: var(--surface2)
+        }
+
+        .quick-btn .icon {
+            font-size: 22px
+        }
+
+        /* ===== プレビューカード ===== */
+        .preview-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 16px 0
+        }
+
+        .preview-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px
+        }
+
+        .preview-card .platform {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px
+        }
+
+        .preview-card textarea {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            padding: 10px;
+            font-size: 13px;
+            min-height: 80px;
+            resize: vertical
+        }
+
+        .preview-card .char-count {
+            text-align: right;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px
+        }
+
+        /* ===== テーブル ===== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            font-weight: 500
+        }
+
+        .data-table td {
+            padding: 12px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .data-table tr:hover td {
+            background: var(--surface2)
+        }
+
+        /* ===== 設定カード ===== */
+        .setting-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 16px
+        }
+
+        .setting-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-light);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .setting-card .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px
+        }
+
+        .setting-row label {
+            min-width: 140px;
+            font-size: 13px;
+            color: var(--text-muted)
+        }
+
+        .setting-row input {
+            flex: 1;
+            padding: 10px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: monospace
+        }
+
+        .eye-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px
+        }
+
+        /* ===== フィルターボタン ===== */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .filter-btn.active {
+            background: var(--accent);
+            color: #0f0f12;
+            border-color: var(--accent)
+        }
+
+        /* ===== 画像アップロード ===== */
+        .photo-upload {
+            border: 2px dashed var(--border);
+            border-radius: 10px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .2s;
+            color: var(--text-muted)
+        }
+
+        .photo-upload:hover,
+        .photo-upload.dragover {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
+        .photo-preview {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px
+        }
+
+        .photo-preview .thumb {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--border)
+        }
+
+        /* ===== レスポンシブ ===== */
+        @media(max-width:768px) {
+            .tab-nav button {
+                min-width: 80px;
+                font-size: 11px;
+                padding: 12px 8px
+            }
+
+            .form-row {
+                flex-direction: column
+            }
+
+            .cast-grid {
+                grid-template-columns: 1fr
+            }
+
+            .quick-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .setting-row {
+                flex-direction: column;
+                align-items: flex-start
+            }
+
+            .setting-row label {
+                min-width: auto
+            }
+
+            .modal {
+                padding: 20px
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== トースト通知コンテナ ===== -->
+    <div id="toast-container"></div>
+
+    <!-- ===== ログイン画面 ===== -->
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="logo">TOKYO RENDAIRE</div>
+            <div class="sub">管理画面</div>
+            <div class="login-err" id="login-err">IDまたはパスワードが正しくありません</div>
+            <input type="email" id="login-id" placeholder="メールアドレス" style="margin-bottom:12px"
+                onkeydown="if(event.key==='Enter')document.getElementById('login-pw').focus()">
+            <input type="password" id="login-pw" placeholder="パスワード" onkeydown="if(event.key==='Enter')doLogin()">
+            <button class="btn btn-primary" style="width:100%;padding:14px" onclick="doLogin()">ログイン</button>
+        </div>
+    </div>
+
+    <!-- ===== メイン画面 ===== -->
+    <div id="main-screen">
+        <!-- トップバー -->
+        <div class="top-bar">
+            <div class="logo">TOKYO RENDAIRE</div>
+            <button class="logout" onclick="doLogout()">ログアウト</button>
+        </div>
+
+        <!-- タブナビ -->
+        <div class="tab-nav">
+            <button class="active" onclick="switchTab('cast',this)">📋 キャスト管理</button>
+            <button onclick="switchTab('sns',this)">📱 SNS投稿</button>
+            <button onclick="switchTab('blog',this)">📝 ブログ管理</button>
+            <button onclick="switchTab('history',this)">📊 投稿履歴</button>
+            <button onclick="switchTab('settings',this)">⚙️ 設定</button>
+        </div>
+
+        <!-- ===== タブ1: キャスト管理 ===== -->
+        <div id="tab-cast" class="tab-content active">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+                <h2 class="section-title" style="margin:0">キャスト管理</h2>
+                <button class="btn btn-primary" onclick="openCastModal()">＋ 新規キャスト登録</button>
+            </div>
+            <div id="cast-grid" class="cast-grid">
+                <div style="color:var(--text-muted);padding:40px;text-align:center">読み込み中...</div>
+            </div>
+        </div>
+
+        <!-- ===== タブ2: SNS投稿 ===== -->
+        <div id="tab-sns" class="tab-content">
+            <h2 class="section-title">クイック投稿</h2>
+            <div class="quick-grid">
+                <div class="quick-btn" onclick="openTemplateModal('daily_schedule')"><span class="icon">📋</span>本日の出勤
+                </div>
+                <div class="quick-btn" onclick="openTemplateModal('new_cast')"><span class="icon">🌸</span>新人入店</div>
+                <div class="quick-btn" onclick="openTemplateModal('campaign')"><span class="icon">🎉</span>キャンペーン</div>
+                <div class="quick-btn" onclick="openTemplateModal('review')"><span class="icon">⭐</span>口コミ紹介</div>
+                <div class="quick-btn" onclick="openTemplateModal('weekend')"><span class="icon">📅</span>週末の空き</div>
+                <div class="quick-btn" onclick="openTemplateModal('cast_return')"><span class="icon">🔄</span>キャスト復帰
+                </div>
+                <div class="quick-btn" onclick="openTemplateModal('ranking')"><span class="icon">👑</span>月間ランキング</div>
+                <div class="quick-btn" onclick="openTemplateModal('announcement')"><span class="icon">⚠️</span>臨時休業・告知
+                </div>
+            </div>
+
+            <!-- 自動生成 -->
+            <div class="card">
+                <div style="display:flex;gap:12px;margin-bottom:16px">
+                    <button class="btn btn-sm btn-secondary" id="btn-auto-tab" onclick="switchSnsSubTab('auto')"
+                        style="border-color:var(--accent)">🤖 自動生成</button>
+                    <button class="btn btn-sm btn-secondary" id="btn-manual-tab" onclick="switchSnsSubTab('manual')">✏️
+                        手動投稿</button>
+                </div>
+
+                <div id="sns-auto-tab">
+                    <div class="form-group">
+                        <label>ネタ・トピック（空欄なら自動生成）</label>
+                        <textarea id="weekly-topics"
+                            placeholder="例：桜シーズンイベント、新コース紹介、六本木グルメ...&#10;空欄にするとAIが自動でネタを考えます"></textarea>
+                    </div>
+                    <button class="btn btn-primary" id="btn-generate-weekly" onclick="generateWeeklyPosts()">🤖
+                        生成する</button>
+                    <div id="weekly-results" style="margin-top:20px;display:none">
+                        <h3 style="color:var(--accent-light);margin-bottom:12px">生成結果</h3>
+                        <div id="weekly-preview"></div>
+                        <button class="btn btn-success" style="margin-top:16px" onclick="postAllWeekly()">📤
+                            全部投稿する</button>
+                    </div>
+                </div>
+
+                <div id="sns-manual-tab" style="display:none">
+                    <div class="form-group">
+                        <label>投稿テキスト</label>
+                        <textarea id="manual-text" placeholder="投稿内容を入力..." style="min-height:150px"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>画像</label>
+                        <div class="photo-upload" id="manual-photo-drop"
+                            onclick="document.getElementById('manual-photo-input').click()">
+                            📷 クリックまたはドラッグ＆ドロップで画像を選択
+                            <input type="file" id="manual-photo-input" accept="image/*" multiple style="display:none"
+                                onchange="previewManualPhotos(this.files)">
+                        </div>
+                        <div class="photo-preview" id="manual-photo-preview"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>投稿先</label>
+                        <div style="display:flex;gap:16px;flex-wrap:wrap">
+                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox"
+                                    value="twitter_en" checked> X（英語）</label>
+                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox"
+                                    value="twitter_ja" checked> X（日本語）</label>
+                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox"
+                                    value="telegram" checked> Telegram</label>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:12px">
+                        <button class="btn btn-secondary" onclick="saveDraft()">💾 下書き保存</button>
+                        <button class="btn btn-primary" onclick="postManual()">📤 投稿する</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== タブ3: ブログ管理 ===== -->
+        <div id="tab-blog" class="tab-content">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+                <h2 class="section-title" style="margin:0">ブログ管理</h2>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-primary" onclick="openBlogGenerateModal()">🤖 自動生成</button>
+                    <button class="btn btn-secondary" onclick="openBlogManualModal()">✏️ 手動作成</button>
+                </div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>タイトル</th>
+                        <th>日付</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="blog-list">
+                    <tr>
+                        <td colspan="3" style="text-align:center;color:var(--text-muted)">読み込み中...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ===== タブ4: 投稿履歴 ===== -->
+        <div id="tab-history" class="tab-content">
+            <h2 class="section-title">投稿履歴</h2>
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="filterHistory('all',this)">全部</button>
+                <button class="filter-btn" onclick="filterHistory('twitter_en',this)">X英語</button>
+                <button class="filter-btn" onclick="filterHistory('twitter_ja',this)">X日本語</button>
+                <button class="filter-btn" onclick="filterHistory('telegram',this)">Telegram</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>日時</th>
+                        <th>プラットフォーム</th>
+                        <th>内容</th>
+                        <th>ステータス</th>
+                    </tr>
+                </thead>
+                <tbody id="history-list">
+                    <tr>
+                        <td colspan="4" style="text-align:center;color:var(--text-muted)">読み込み中...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ===== タブ5: 設定 ===== -->
+        <div id="tab-settings" class="tab-content">
+            <h2 class="section-title">設定</h2>
+
+            <!-- X(Twitter) 英語 -->
+            <div class="setting-card" id="setting-twitter-en">
+                <h3><span class="status-dot" id="dot-twitter-en" style="background:var(--text-muted)"></span> X
+                    (Twitter) 英語アカウント</h3>
+                <div class="setting-row"><label>API Key</label><input type="password" data-key="TWITTER_API_KEY"><button
+                        class="eye-btn" onclick="toggleEye(this)">👁</button></div>
+                <div class="setting-row"><label>API Secret</label><input type="password"
+                        data-key="TWITTER_API_SECRET"><button class="eye-btn" onclick="toggleEye(this)">👁</button>
+                </div>
+                <div class="setting-row"><label>Access Token</label><input type="password"
+                        data-key="TWITTER_ACCESS_TOKEN"><button class="eye-btn" onclick="toggleEye(this)">👁</button>
+                </div>
+                <div class="setting-row"><label>Access Secret</label><input type="password"
+                        data-key="TWITTER_ACCESS_SECRET"><button class="eye-btn" onclick="toggleEye(this)">👁</button>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                    <button class="btn btn-sm btn-secondary" onclick="testService('twitter_en')">テスト</button>
+                    <button class="btn btn-sm btn-primary" onclick="saveSettings('twitter_en')">保存</button>
+                </div>
+            </div>
+
+            <!-- X(Twitter) 日本語 -->
+            <div class="setting-card" id="setting-twitter-ja">
+                <h3><span class="status-dot" id="dot-twitter-ja" style="background:var(--text-muted)"></span> X
+                    (Twitter) 日本語アカウント</h3>
+                <div class="setting-row"><label>API Key</label><input type="password"
+                        data-key="TWITTER_API_KEY_JA"><button class="eye-btn" onclick="toggleEye(this)">👁</button>
+                </div>
+                <div class="setting-row"><label>API Secret</label><input type="password"
+                        data-key="TWITTER_API_SECRET_JA"><button class="eye-btn" onclick="toggleEye(this)">👁</button>
+                </div>
+                <div class="setting-row"><label>Access Token</label><input type="password"
+                        data-key="TWITTER_ACCESS_TOKEN_JA"><button class="eye-btn" onclick="toggleEye(this)">👁</button>
+                </div>
+                <div class="setting-row"><label>Access Secret</label><input type="password"
+                        data-key="TWITTER_ACCESS_SECRET_JA"><button class="eye-btn"
+                        onclick="toggleEye(this)">👁</button></div>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                    <button class="btn btn-sm btn-secondary" onclick="testService('twitter_ja')">テスト</button>
+                    <button class="btn btn-sm btn-primary" onclick="saveSettings('twitter_ja')">保存</button>
+                </div>
+            </div>
+
+            <!-- Telegram -->
+            <div class="setting-card" id="setting-telegram">
+                <h3><span class="status-dot" id="dot-telegram" style="background:var(--text-muted)"></span> Telegram
+                </h3>
+                <div class="setting-row"><label>Bot Token</label><input type="password"
+                        data-key="TELEGRAM_BOT_TOKEN"><button class="eye-btn" onclick="toggleEye(this)">👁</button>
+                </div>
+                <div class="setting-row"><label>Channel ID</label><input type="text"
+                        data-key="TELEGRAM_CHANNEL_ID"><button class="eye-btn" onclick="toggleEye(this)">👁</button>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                    <button class="btn btn-sm btn-secondary" onclick="testService('telegram')">テスト</button>
+                    <button class="btn btn-sm btn-primary" onclick="saveSettings('telegram')">保存</button>
+                </div>
+            </div>
+
+            <!-- Claude API -->
+            <div class="setting-card" id="setting-claude">
+                <h3><span class="status-dot" id="dot-claude" style="background:var(--text-muted)"></span> Claude AI
+                    (Anthropic)</h3>
+                <div class="setting-row"><label>API Key</label><input type="password"
+                        data-key="ANTHROPIC_API_KEY"><button class="eye-btn" onclick="toggleEye(this)">👁</button></div>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                    <button class="btn btn-sm btn-secondary" onclick="testService('claude')">テスト</button>
+                    <button class="btn btn-sm btn-primary" onclick="saveSettings('claude')">保存</button>
+                </div>
+            </div>
+
+            <!-- GitHub -->
+            <div class="setting-card" id="setting-github">
+                <h3><span class="status-dot" id="dot-github" style="background:var(--text-muted)"></span> GitHub</h3>
+                <div class="setting-row"><label>Token</label><input type="password" data-key="GITHUB_TOKEN"><button
+                        class="eye-btn" onclick="toggleEye(this)">👁</button></div>
+                <div class="setting-row"><label>リポジトリ</label><input type="text" data-key="GITHUB_REPO"
+                        placeholder="user/repo"><button class="eye-btn" onclick="toggleEye(this)">👁</button></div>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                    <button class="btn btn-sm btn-secondary" onclick="testService('github')">テスト</button>
+                    <button class="btn btn-sm btn-primary" onclick="saveSettings('github')">保存</button>
+                </div>
+            </div>
+
+            <!-- サイトURL -->
+            <div class="setting-card">
+                <h3>🌐 サイト設定</h3>
+                <div class="setting-row"><label>サイトURL</label><input type="text" data-key="SITE_URL"
+                        placeholder="https://tokyorendaire.com"></div>
+                <button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="saveSettings('site')">保存</button>
+            </div>
+
+            <!-- パスワード変更 -->
+            <div class="setting-card">
+                <h3>🔒 パスワード変更</h3>
+                <div class="setting-row"><label>現在のパスワード</label><input type="password" id="pw-current"></div>
+                <div class="setting-row"><label>新しいパスワード</label><input type="password" id="pw-new"></div>
+                <button class="btn btn-sm btn-primary" style="margin-top:8px"
+                    onclick="changePassword()">パスワード変更</button>
+            </div>
+        </div>
+
+    </div><!-- /main-screen -->
+
+    <!-- ===== モーダル用コンテナ ===== -->
+    <div id="modal-container"></div>
+
+    <script>
+        // ============================================
+        // Tokyo Rendaire 管理画面 JavaScript
+        // ============================================
+
+        const API = '';
+        let castList = [];
+        let weeklyPostsData = null;
+
+        // ===== ユーティリティ =====
+        function toast(msg, type = 'success') {
+            const el = document.createElement('div');
+            el.className = 'toast toast-' + type;
+            el.textContent = msg;
+            document.getElementById('toast-container').appendChild(el);
+            setTimeout(() => el.remove(), 3500);
+        }
+
+        async function api(url, opts = {}) {
+            try {
+                const res = await fetch(API + url, {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...opts
+                });
+                const ct = res.headers.get('content-type') || '';
+                if (!ct.includes('application/json')) {
+                    toast('APIサーバーに接続できません。管理画面はExpressサーバー経由でアクセスしてください。', 'error');
+                    return { success: false, error: 'APIサーバー未接続' };
+                }
+                return await res.json();
+            } catch (e) {
+                toast('通信エラー: ' + e.message, 'error');
+                return { success: false, error: e.message };
+            }
+        }
+
+        function setLoading(btn, loading) {
+            if (loading) {
+                btn.disabled = true;
+                btn._origHTML = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner"></span> 処理中...';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = btn._origHTML || btn.innerHTML;
+            }
+        }
+
+        function escHtml(s) { return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : ''; }
+
+        function confirm2(msg) { return window.confirm(msg); }
+
+        function closeModal() { document.getElementById('modal-container').innerHTML = ''; }
+
+        function showModal(html) {
+            document.getElementById('modal-container').innerHTML =
+                '<div class="modal-overlay" onclick="if(event.target===this)closeModal()">' +
+                '<div class="modal" style="position:relative">' +
+                '<button class="close-btn" onclick="closeModal()">✕</button>' +
+                html + '</div></div>';
+        }
+
+        // ===== ログイン =====
+        async function doLogin() {
+            const id = document.getElementById('login-id').value;
+            const pw = document.getElementById('login-pw').value;
+            if (!id || !pw) return;
+            const res = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ id: id, password: pw }) });
+            if (res.success) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-screen').style.display = 'block';
+                loadCasts();
+                loadSettings();
+            } else {
+                const err = document.getElementById('login-err');
+                err.style.display = 'block';
+                err.textContent = res.error || 'パスワードが正しくありません';
+            }
+        }
+
+        function doLogout() {
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('main-screen').style.display = 'none';
+            document.getElementById('login-id').value = '';
+            document.getElementById('login-pw').value = '';
+        }
+
+        // ===== タブ切り替え =====
+        function switchTab(name, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            btn.classList.add('active');
+            if (name === 'cast') loadCasts();
+            if (name === 'history') loadHistory();
+            if (name === 'blog') loadBlogList();
+            if (name === 'settings') loadSettings();
+        }
+
+        function switchSnsSubTab(tab) {
+            document.getElementById('sns-auto-tab').style.display = tab === 'auto' ? 'block' : 'none';
+            document.getElementById('sns-manual-tab').style.display = tab === 'manual' ? 'block' : 'none';
+            document.getElementById('btn-auto-tab').style.borderColor = tab === 'auto' ? 'var(--accent)' : 'var(--border)';
+            document.getElementById('btn-manual-tab').style.borderColor = tab === 'manual' ? 'var(--accent)' : 'var(--border)';
+        }
+
+        // ===== キャスト管理 =====
+        async function loadCasts() {
+            const res = await api('/api/cast');
+            castList = res.casts || [];
+            renderCasts();
+        }
+
+        function renderCasts() {
+            const grid = document.getElementById('cast-grid');
+            if (castList.length === 0) {
+                grid.innerHTML = '<div style="color:var(--text-muted);padding:40px;text-align:center;grid-column:1/-1">キャストが登録されていません</div>';
+                return;
+            }
+            grid.innerHTML = castList.map(c => {
+                const photo = c.photos && c.photos.length > 0 ? '/' + c.photos[0] : '';
+                const isOnDuty = c.status === '出勤中';
+                return `<div class="cast-card">
+      ${photo ? '<img class="photo" src="' + escHtml(photo) + '" alt="">' : '<div class="photo" style="display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--border)">👤</div>'}
+      <div class="info">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="name">${escHtml(c.name)}</div>
+          <span class="status-badge status-${escHtml(c.status)}">${escHtml(c.status)}</span>
+        </div>
+        <div class="specs">${c.age}歳 / ${c.height}cm / B${escHtml(c.bust)} W${c.waist} H${c.hip}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <span style="font-size:13px;color:var(--text-muted)">出勤</span>
+          <label class="toggle"><input type="checkbox" ${isOnDuty ? 'checked' : ''} onchange="toggleCastStatus('${c.id}',this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="actions">
+          <button class="btn btn-sm btn-primary" onclick="announceCast('${c.id}')">📢 お知らせ</button>
+          <button class="btn btn-sm btn-secondary" onclick="editCast('${c.id}')">編集</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteCast('${c.id}')">削除</button>
+        </div>
+      </div>
+    </div>`;
+            }).join('');
+        }
+
+        async function toggleCastStatus(id, checked) {
+            const status = checked ? '出勤中' : '待機中';
+            const res = await api('/api/cast/' + id + '/status', { method: 'PUT', body: JSON.stringify({ status }) });
+            if (res.success) { toast(status + 'に変更しました'); loadCasts(); }
+            else toast('エラー: ' + (res.error || ''), 'error');
+        }
+
+        async function announceCast(id) {
+            if (!confirm2('このキャストのお知らせをSNSに投稿しますか？')) return;
+            toast('生成・投稿中...', 'warning');
+            const res = await api('/api/cast/' + id + '/announce', { method: 'POST' });
+            if (res.success) toast('お知らせを投稿しました！');
+            else toast('エラー: ' + (res.error || ''), 'error');
+        }
+
+        async function deleteCast(id) {
+            if (!confirm2('このキャストを削除しますか？')) return;
+            const res = await api('/api/cast/' + id, { method: 'DELETE' });
+            if (res.success) { toast('削除しました'); loadCasts(); }
+            else toast('エラー: ' + (res.error || ''), 'error');
+        }
+
+        function openCastModal(cast) {
+            const isEdit = !!cast;
+            showModal(`
+    <h2>${isEdit ? 'キャスト編集' : '新規キャスト登録'}</h2>
+    <div class="form-row">
+      <div class="form-group"><label>名前</label><input id="m-name" value="${escHtml(cast?.name || '')}"></div>
+      <div class="form-group"><label>年齢</label><input id="m-age" type="number" value="${cast?.age || ''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>身長 (cm)</label><input id="m-height" type="number" value="${cast?.height || ''}"></div>
+      <div class="form-group"><label>バスト</label><input id="m-bust" value="${escHtml(cast?.bust || '')}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>ウエスト</label><input id="m-waist" type="number" value="${cast?.waist || ''}"></div>
+      <div class="form-group"><label>ヒップ</label><input id="m-hip" type="number" value="${cast?.hip || ''}"></div>
+    </div>
+    <div class="form-group"><label>紹介文（日本語）</label><textarea id="m-desc-ja">${escHtml(cast?.description_ja || '')}</textarea></div>
+    <div class="form-group">
+      <label>写真</label>
+      <div class="photo-upload" id="cast-photo-drop" onclick="document.getElementById('cast-photo-input').click()">
+        📷 クリックまたはドラッグ＆ドロップで画像を選択
+        <input type="file" id="cast-photo-input" accept="image/*" multiple style="display:none" onchange="previewCastPhotos(this.files)">
+      </div>
+      <div class="photo-preview" id="cast-photo-preview">
+        ${(cast?.photos || []).map(p => '<img class="thumb" src="/' + escHtml(p) + '">').join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-primary" id="btn-save-cast" onclick="saveCast(${isEdit ? "'" + cast.id + "'" : 'null'})">保存</button>
+    </div>
+  `);
+            setupDragDrop('cast-photo-drop', 'cast-photo-input');
+        }
+
+        async function editCast(id) {
+            const cast = castList.find(c => String(c.id) === String(id));
+            if (cast) openCastModal(cast);
+        }
+
+        let castPhotoFiles = [];
+        function previewCastPhotos(files) {
+            castPhotoFiles = Array.from(files);
+            const preview = document.getElementById('cast-photo-preview');
+            preview.innerHTML = '';
+            castPhotoFiles.forEach(f => {
+                const reader = new FileReader();
+                reader.onload = e => { preview.innerHTML += '<img class="thumb" src="' + e.target.result + '">'; };
+                reader.readAsDataURL(f);
+            });
+        }
+
+        async function saveCast(id) {
+            const btn = document.getElementById('btn-save-cast');
+            setLoading(btn, true);
+            const form = new FormData();
+            form.append('name', document.getElementById('m-name').value);
+            form.append('age', document.getElementById('m-age').value);
+            form.append('height', document.getElementById('m-height').value);
+            form.append('bust', document.getElementById('m-bust').value);
+            form.append('waist', document.getElementById('m-waist').value);
+            form.append('hip', document.getElementById('m-hip').value);
+            form.append('description_ja', document.getElementById('m-desc-ja').value);
+            castPhotoFiles.forEach(f => form.append('photos', f));
+
+            const url = id ? '/api/cast/' + id : '/api/cast';
+            const method = id ? 'PUT' : 'POST';
+            try {
+                const res = await fetch(url, { method, body: form });
+                const data = await res.json();
+                if (data.success) { toast('保存しました'); closeModal(); loadCasts(); }
+                else toast('エラー: ' + (data.error || ''), 'error');
+            } catch (e) { toast('通信エラー', 'error'); }
+            setLoading(btn, false);
+            castPhotoFiles = [];
+        }
+
+        // ===== SNS投稿 =====
+        async function generateWeeklyPosts() {
+            const btn = document.getElementById('btn-generate-weekly');
+            setLoading(btn, true);
+            const topics = document.getElementById('weekly-topics').value;
+            const res = await api('/api/sns/generate', { method: 'POST', body: JSON.stringify({ topics }) });
+            setLoading(btn, false);
+
+            if (!res.success) { toast(res.error || '⚠️ APIキーが未設定です。設定タブから設定してください', 'error'); return; }
+
+            weeklyPostsData = res.posts;
+            const container = document.getElementById('weekly-preview');
+            container.innerHTML = '';
+
+            // X英語
+            if (res.posts.twitter_en) {
+                container.innerHTML += '<h4 style="color:var(--blue);margin:12px 0 8px">X（英語）</h4>';
+                res.posts.twitter_en.forEach((p, i) => {
+                    const text = typeof p === 'string' ? p : p.text;
+                    container.innerHTML += `<div class="preview-card"><div class="platform">X EN #${i + 1} ${p.day || ''} ${p.time || ''}</div><textarea id="wp-en-${i}">${escHtml(text)}</textarea><div class="char-count">${text.length}/280</div></div>`;
+                });
+            }
+            // X日本語
+            if (res.posts.twitter_ja) {
+                container.innerHTML += '<h4 style="color:var(--red);margin:12px 0 8px">X（日本語）</h4>';
+                res.posts.twitter_ja.forEach((p, i) => {
+                    const text = typeof p === 'string' ? p : p.text;
+                    container.innerHTML += `<div class="preview-card"><div class="platform">X JA #${i + 1} ${p.day || ''}</div><textarea id="wp-ja-${i}">${escHtml(text)}</textarea><div class="char-count">${text.length}/280</div></div>`;
+                });
+            }
+            // Telegram
+            if (res.posts.telegram) {
+                container.innerHTML += '<h4 style="color:var(--green);margin:12px 0 8px">Telegram</h4>';
+                res.posts.telegram.forEach((p, i) => {
+                    const text = typeof p === 'string' ? p : p.text;
+                    container.innerHTML += `<div class="preview-card"><div class="platform">Telegram #${i + 1} ${p.day || ''}</div><textarea id="wp-tg-${i}" style="min-height:120px">${escHtml(text)}</textarea></div>`;
+                });
+            }
+
+            document.getElementById('weekly-results').style.display = 'block';
+            toast('投稿文を生成しました！');
+        }
+
+        async function postAllWeekly() {
+            if (!weeklyPostsData || !confirm2('全投稿をSNSに送信しますか？')) return;
+
+            // テキストエリアの編集を反映
+            const posts = { twitter_en: [], twitter_ja: [], telegram: [] };
+            if (weeklyPostsData.twitter_en) {
+                weeklyPostsData.twitter_en.forEach((p, i) => {
+                    const el = document.getElementById('wp-en-' + i);
+                    if (el) posts.twitter_en.push(el.value);
+                });
+            }
+            if (weeklyPostsData.twitter_ja) {
+                weeklyPostsData.twitter_ja.forEach((p, i) => {
+                    const el = document.getElementById('wp-ja-' + i);
+                    if (el) posts.twitter_ja.push(el.value);
+                });
+            }
+            if (weeklyPostsData.telegram) {
+                weeklyPostsData.telegram.forEach((p, i) => {
+                    const el = document.getElementById('wp-tg-' + i);
+                    if (el) posts.telegram.push(el.value);
+                });
+            }
+
+            toast('投稿中...', 'warning');
+            const res = await api('/api/sns/post', { method: 'POST', body: JSON.stringify({ posts }) });
+            if (res.success) toast('投稿完了しました！');
+            else toast('エラーがありました', 'error');
+        }
+
+        // 手動投稿
+        let manualPhotoFiles = [];
+        function previewManualPhotos(files) {
+            manualPhotoFiles = Array.from(files);
+            const preview = document.getElementById('manual-photo-preview');
+            preview.innerHTML = '';
+            manualPhotoFiles.forEach(f => {
+                const reader = new FileReader();
+                reader.onload = e => { preview.innerHTML += '<img class="thumb" src="' + e.target.result + '">'; };
+                reader.readAsDataURL(f);
+            });
+        }
+
+        async function postManual() {
+            const text = document.getElementById('manual-text').value;
+            if (!text) { toast('テキストを入力してください', 'warning'); return; }
+            const platforms = Array.from(document.querySelectorAll('#sns-manual-tab input[type=checkbox]:checked')).map(c => c.value);
+            if (platforms.length === 0) { toast('投稿先を選択してください', 'warning'); return; }
+            if (!confirm2('投稿しますか？')) return;
+
+            const form = new FormData();
+            form.append('text', text);
+            form.append('platforms', JSON.stringify(platforms));
+            manualPhotoFiles.forEach(f => form.append('images', f));
+
+            toast('投稿中...', 'warning');
+            try {
+                const res = await fetch('/api/sns/manual', { method: 'POST', body: form });
+                const data = await res.json();
+                if (data.success) { toast('投稿しました！'); document.getElementById('manual-text').value = ''; }
+                else toast('エラー: ' + (data.error || ''), 'error');
+            } catch (e) { toast('通信エラー', 'error'); }
+        }
+
+        async function saveDraft() {
+            const text = document.getElementById('manual-text').value;
+            if (!text) { toast('テキストを入力してください', 'warning'); return; }
+            const res = await api('/api/sns/draft', { method: 'POST', body: JSON.stringify({ text }) });
+            if (res.success) toast('下書きを保存しました');
+            else toast('エラー', 'error');
+        }
+
+        // ===== テンプレート投稿モーダル =====
+        async function openTemplateModal(type) {
+            let formHTML = '';
+            switch (type) {
+                case 'daily_schedule':
+                    formHTML = '<p style="color:var(--text-muted);margin-bottom:16px">出勤中のキャスト一覧からAIが投稿文を自動生成します。</p>';
+                    break;
+                case 'new_cast':
+                    formHTML = '<div class="form-group"><label>キャスト選択</label><select id="tpl-cast">' + castList.map(c => '<option value="' + c.id + '">' + escHtml(c.name) + '</option>').join('') + '</select></div>';
+                    break;
+                case 'campaign':
+                    formHTML = `
+        <div class="form-group"><label>キャンペーン名</label><input id="tpl-camp-name"></div>
+        <div class="form-group"><label>割引額</label><input id="tpl-camp-discount" placeholder="例: 5,000円OFF"></div>
+        <div class="form-group"><label>期間</label><input id="tpl-camp-period" placeholder="例: 4/1〜4/30"></div>
+        <div class="form-group"><label>説明</label><textarea id="tpl-camp-desc"></textarea></div>`;
+                    break;
+                case 'review':
+                    formHTML = `
+        <div class="form-group"><label>レビューテキスト</label><textarea id="tpl-review-text"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>キャスト名</label><input id="tpl-review-cast"></div>
+          <div class="form-group"><label>星数</label><select id="tpl-review-rating"><option>5</option><option>4</option><option>3</option></select></div>
+        </div>`;
+                    break;
+                case 'weekend':
+                    formHTML = `
+        <div class="form-group"><label>空きキャスト（複数選択可）</label><select id="tpl-weekend-casts" multiple style="min-height:100px">${castList.map(c => '<option value="' + c.id + '">' + escHtml(c.name) + '</option>').join('')}</select></div>
+        <div class="form-group"><label>備考</label><textarea id="tpl-weekend-notes"></textarea></div>`;
+                    break;
+                case 'cast_return':
+                    formHTML = `
+        <div class="form-group"><label>キャスト選択</label><select id="tpl-return-cast">${castList.map(c => '<option value="' + c.id + '">' + escHtml(c.name) + '</option>').join('')}</select></div>
+        <div class="form-group"><label>メッセージ</label><textarea id="tpl-return-msg"></textarea></div>`;
+                    break;
+                case 'ranking':
+                    formHTML = '<p style="color:var(--text-muted);margin-bottom:16px">登録済みキャストから月間ランキングを自動生成します。</p>';
+                    break;
+                case 'announcement':
+                    formHTML = `
+        <div class="form-group"><label>タイトル</label><input id="tpl-ann-title" placeholder="例: 年末年始の営業時間"></div>
+        <div class="form-group"><label>内容</label><textarea id="tpl-ann-content"></textarea></div>
+        <div class="form-group"><label>期間</label><input id="tpl-ann-period" placeholder="例: 12/30〜1/3"></div>`;
+                    break;
+            }
+
+            const typeLabels = {
+                daily_schedule: '📋 本日の出勤', new_cast: '🌸 新人入店', campaign: '🎉 キャンペーン',
+                review: '⭐ 口コミ紹介', weekend: '📅 週末の空き', cast_return: '🔄 キャスト復帰',
+                ranking: '👑 月間ランキング', announcement: '⚠️ お知らせ'
+            };
+
+            showModal(`
+    <h2>${typeLabels[type] || type}</h2>
+    ${formHTML}
+    <div id="tpl-preview" style="display:none">
+      <div class="preview-cards" id="tpl-preview-cards"></div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-primary" id="btn-tpl-generate" onclick="generateTemplate('${type}')">🤖 生成する</button>
+      <button class="btn btn-success" id="btn-tpl-post" style="display:none" onclick="postTemplate()">📤 全SNSに投稿</button>
+    </div>
+  `);
+        }
+
+        let templatePosts = null;
+        async function generateTemplate(type) {
+            const btn = document.getElementById('btn-tpl-generate');
+            setLoading(btn, true);
+
+            let data = {};
+            switch (type) {
+                case 'new_cast': data = { castId: document.getElementById('tpl-cast')?.value }; break;
+                case 'campaign': data = { name: document.getElementById('tpl-camp-name')?.value, discount: document.getElementById('tpl-camp-discount')?.value, period: document.getElementById('tpl-camp-period')?.value, description: document.getElementById('tpl-camp-desc')?.value }; break;
+                case 'review': data = { reviewText: document.getElementById('tpl-review-text')?.value, castName: document.getElementById('tpl-review-cast')?.value, rating: document.getElementById('tpl-review-rating')?.value }; break;
+                case 'weekend': {
+                    const sel = document.getElementById('tpl-weekend-casts');
+                    data = { castIds: sel ? Array.from(sel.selectedOptions).map(o => o.value) : [], notes: document.getElementById('tpl-weekend-notes')?.value };
+                    break;
+                }
+                case 'cast_return': data = { castId: document.getElementById('tpl-return-cast')?.value, message: document.getElementById('tpl-return-msg')?.value }; break;
+                case 'announcement': data = { title: document.getElementById('tpl-ann-title')?.value, content: document.getElementById('tpl-ann-content')?.value, period: document.getElementById('tpl-ann-period')?.value }; break;
+            }
+
+            const res = await api('/api/sns/template', { method: 'POST', body: JSON.stringify({ type, data }) });
+            setLoading(btn, false);
+
+            if (!res.success) { toast(res.error || '⚠️ APIキーが未設定です。設定タブから設定してください', 'error'); return; }
+
+            templatePosts = res.posts;
+            const container = document.getElementById('tpl-preview-cards');
+            container.innerHTML = '';
+
+            if (res.posts.twitter_en) container.innerHTML += `<div class="preview-card"><div class="platform">X（英語）</div><textarea id="tpl-en">${escHtml(res.posts.twitter_en)}</textarea><div class="char-count">${res.posts.twitter_en.length}/280</div></div>`;
+            if (res.posts.twitter_ja) container.innerHTML += `<div class="preview-card"><div class="platform">X（日本語）</div><textarea id="tpl-ja">${escHtml(res.posts.twitter_ja)}</textarea><div class="char-count">${res.posts.twitter_ja.length}/280</div></div>`;
+            if (res.posts.telegram) container.innerHTML += `<div class="preview-card"><div class="platform">Telegram</div><textarea id="tpl-tg" style="min-height:140px">${escHtml(res.posts.telegram)}</textarea></div>`;
+
+            document.getElementById('tpl-preview').style.display = 'block';
+            document.getElementById('btn-tpl-post').style.display = 'inline-flex';
+            toast('投稿文を生成しました');
+        }
+
+        async function postTemplate() {
+            if (!confirm2('全SNSに投稿しますか？')) return;
+            const posts = {
+                twitter_en: [document.getElementById('tpl-en')?.value].filter(Boolean),
+                twitter_ja: [document.getElementById('tpl-ja')?.value].filter(Boolean),
+                telegram: [document.getElementById('tpl-tg')?.value].filter(Boolean),
+            };
+            toast('投稿中...', 'warning');
+            const res = await api('/api/sns/post', { method: 'POST', body: JSON.stringify({ posts }) });
+            if (res.success) { toast('投稿完了しました！'); closeModal(); }
+            else toast('エラーがありました', 'error');
+        }
+
+        // ===== ブログ管理 =====
+        async function loadBlogList() {
+            const res = await api('/api/blog/list');
+            const tbody = document.getElementById('blog-list');
+            const articles = res.articles || [];
+            if (articles.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">記事がありません</td></tr>';
+                return;
+            }
+            tbody.innerHTML = articles.map(a => `<tr>
+    <td>${escHtml(a.title)}</td>
+    <td style="color:var(--text-muted)">${escHtml(a.date)}</td>
+    <td><button class="btn btn-sm btn-danger" onclick="deleteBlog('${escHtml(a.slug)}')">削除</button></td>
+  </tr>`).join('');
+        }
+
+        function openBlogGenerateModal() {
+            showModal(`
+    <h2>🤖 ブログ記事自動生成</h2>
+    <div class="form-group"><label>トピック（空欄なら自動提案）</label><input id="blog-topic" placeholder="例: Tokyo nightlife guide for tourists"></div>
+    <div id="blog-gen-preview" style="display:none">
+      <div class="form-group"><label>タイトル</label><input id="blog-title" readonly></div>
+      <div class="form-group"><label>Slug</label><input id="blog-slug" readonly></div>
+      <div class="form-group"><label>メタディスクリプション</label><textarea id="blog-meta" style="min-height:60px" readonly></textarea></div>
+      <div class="form-group"><label>本文プレビュー</label><div id="blog-body-preview" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:16px;max-height:300px;overflow-y:auto;font-size:14px;color:var(--text-muted)"></div></div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-primary" id="btn-blog-gen" onclick="generateBlog()">🤖 生成</button>
+      <button class="btn btn-success" id="btn-blog-pub" style="display:none" onclick="publishBlog()">🌐 公開する</button>
+    </div>
+  `);
+        }
+
+        let blogArticleData = null;
+        async function generateBlog() {
+            const btn = document.getElementById('btn-blog-gen');
+            setLoading(btn, true);
+            const topic = document.getElementById('blog-topic').value;
+            const res = await api('/api/blog/generate', { method: 'POST', body: JSON.stringify({ topic }) });
+            setLoading(btn, false);
+
+            if (!res.success) { toast(res.error || '⚠️ APIキーが未設定です。設定タブから設定してください', 'error'); return; }
+
+            blogArticleData = res.article;
+            document.getElementById('blog-title').value = res.article.title || '';
+            document.getElementById('blog-slug').value = res.article.slug || '';
+            document.getElementById('blog-meta').value = res.article.meta || '';
+            document.getElementById('blog-body-preview').innerHTML = res.article.body || '';
+            document.getElementById('blog-gen-preview').style.display = 'block';
+            document.getElementById('btn-blog-pub').style.display = 'inline-flex';
+            toast('記事を生成しました');
+        }
+
+        async function publishBlog() {
+            if (!blogArticleData || !confirm2('この記事を公開しますか？')) return;
+            const res = await api('/api/blog/publish', { method: 'POST', body: JSON.stringify(blogArticleData) });
+            if (res.success) { toast('記事を公開しました！ ' + (res.url || '')); closeModal(); loadBlogList(); }
+            else toast('エラー: ' + (res.error || ''), 'error');
+        }
+
+        function openBlogManualModal() {
+            showModal(`
+    <h2>✏️ 手動記事作成</h2>
+    <div class="form-group"><label>タイトル</label><input id="bm-title"></div>
+    <div class="form-group"><label>Slug (URL)</label><input id="bm-slug" placeholder="例: my-new-article"></div>
+    <div class="form-group"><label>メタディスクリプション</label><textarea id="bm-meta" style="min-height:60px"></textarea></div>
+    <div class="form-group"><label>本文 (HTML)</label><textarea id="bm-body" style="min-height:250px"></textarea></div>
+    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-success" onclick="publishManualBlog()">🌐 公開する</button>
+    </div>
+  `);
+        }
+
+        async function publishManualBlog() {
+            const data = {
+                title: document.getElementById('bm-title').value,
+                slug: document.getElementById('bm-slug').value,
+                meta: document.getElementById('bm-meta').value,
+                body: document.getElementById('bm-body').value
+            };
+            if (!data.title || !data.slug || !data.body) { toast('タイトル、Slug、本文は必須です', 'warning'); return; }
+            const res = await api('/api/blog/manual', { method: 'POST', body: JSON.stringify(data) });
+            if (res.success) { toast('記事を公開しました！'); closeModal(); loadBlogList(); }
+            else toast('エラー: ' + (res.error || ''), 'error');
+        }
+
+        async function deleteBlog(slug) {
+            if (!confirm2('この記事を削除しますか？')) return;
+            const res = await api('/api/blog/' + slug, { method: 'DELETE' });
+            if (res.success) { toast('削除しました'); loadBlogList(); }
+            else toast('エラー: ' + (res.error || ''), 'error');
+        }
+
+        // ===== 投稿履歴 =====
+        async function loadHistory(platform) {
+            const url = platform && platform !== 'all' ? '/api/sns/history?platform=' + platform : '/api/sns/history';
+            const res = await api(url);
+            const tbody = document.getElementById('history-list');
+            const history = res.history || [];
+            if (history.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">履歴がありません</td></tr>';
+                return;
+            }
+            tbody.innerHTML = history.map(h => {
+                const date = new Date(h.createdAt).toLocaleString('ja-JP');
+                const platforms = (h.results || []).map(r => r.platform).join(', ') || h.type || '';
+                const text = h.text || (h.results && h.results[0] ? h.results[0].text : '') || h.type || '';
+                const hasError = (h.results || []).some(r => !r.success);
+                return `<tr>
+      <td style="white-space:nowrap;color:var(--text-muted)">${date}</td>
+      <td>${escHtml(platforms)}</td>
+      <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(text.substring(0, 80))}</td>
+      <td>${hasError ? '<span style="color:var(--red)">❌ エラーあり</span>' : '<span style="color:var(--green)">✅ 成功</span>'}</td>
+    </tr>`;
+            }).join('');
+        }
+
+        function filterHistory(platform, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            loadHistory(platform);
+        }
+
+        // ===== 設定 =====
+        async function loadSettings() {
+            const res = await api('/api/auth/settings');
+            if (!res.success) return;
+            const settings = res.settings || {};
+            document.querySelectorAll('.setting-row input[data-key]').forEach(input => {
+                const key = input.dataset.key;
+                if (settings[key] !== undefined) input.value = settings[key];
+            });
+        }
+
+        function toggleEye(btn) {
+            const input = btn.previousElementSibling;
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function getSettingInputs(service) {
+            const keyMap = {
+                'twitter_en': ['TWITTER_API_KEY', 'TWITTER_API_SECRET', 'TWITTER_ACCESS_TOKEN', 'TWITTER_ACCESS_SECRET'],
+                'twitter_ja': ['TWITTER_API_KEY_JA', 'TWITTER_API_SECRET_JA', 'TWITTER_ACCESS_TOKEN_JA', 'TWITTER_ACCESS_SECRET_JA'],
+                'telegram': ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHANNEL_ID'],
+                'claude': ['ANTHROPIC_API_KEY'],
+                'github': ['GITHUB_TOKEN', 'GITHUB_REPO'],
+                'site': ['SITE_URL']
+            };
+            const keys = keyMap[service] || [];
+            const data = {};
+            keys.forEach(k => {
+                const input = document.querySelector('input[data-key="' + k + '"]');
+                if (input) data[k] = input.value;
+            });
+            return data;
+        }
+
+        async function saveSettings(service) {
+            const data = getSettingInputs(service);
+            const res = await api('/api/auth/settings', { method: 'POST', body: JSON.stringify(data) });
+            if (res.success) toast('設定を保存しました');
+            else toast('エラー: ' + (res.error || ''), 'error');
+        }
+
+        async function testService(service) {
+            const dot = document.getElementById('dot-' + service);
+            if (dot) dot.style.background = 'var(--yellow)';
+            toast('テスト中...', 'warning');
+            const res = await api('/api/auth/settings/test', { method: 'POST', body: JSON.stringify({ service }) });
+            if (res.success) {
+                toast(res.message || '接続成功');
+                if (dot) dot.style.background = 'var(--green)';
+            } else {
+                toast(res.message || 'テスト失敗', 'error');
+                if (dot) dot.style.background = 'var(--red)';
+            }
+        }
+
+        async function changePassword() {
+            const current = document.getElementById('pw-current').value;
+            const newPw = document.getElementById('pw-new').value;
+            if (!current || !newPw) { toast('両方入力してください', 'warning'); return; }
+            const res = await api('/api/auth/change-password', { method: 'POST', body: JSON.stringify({ currentPassword: current, newPassword: newPw }) });
+            if (res.success) { toast('パスワードを変更しました'); document.getElementById('pw-current').value = ''; document.getElementById('pw-new').value = ''; }
+            else toast(res.error || 'エラー', 'error');
+        }
+
+        // ===== ドラッグ＆ドロップ =====
+        function setupDragDrop(dropId, inputId) {
+            const drop = document.getElementById(dropId);
+            if (!drop) return;
+            drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+            drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+            drop.addEventListener('drop', e => {
+                e.preventDefault();
+                drop.classList.remove('dragover');
+                const input = document.getElementById(inputId);
+                if (input && e.dataTransfer.files.length) {
+                    if (dropId.startsWith('cast')) previewCastPhotos(e.dataTransfer.files);
+                    else previewManualPhotos(e.dataTransfer.files);
+                }
+            });
+        }
+
+        // 手動投稿のドラッグ＆ドロップ
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDragDrop('manual-photo-drop', 'manual-photo-input');
+            // APIサーバー接続チェック
+            fetch('/api/auth/settings').then(r => {
+                const ct = r.headers.get('content-type') || '';
+                if (!ct.includes('application/json')) throw new Error('not json');
+            }).catch(() => {
+                const err = document.getElementById('login-err');
+                if (err) {
+                    err.style.display = 'block';
+                    err.innerHTML = 'APIサーバーに接続できません。<br><b>http://localhost:3000/admin.html</b> からアクセスしてください。';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

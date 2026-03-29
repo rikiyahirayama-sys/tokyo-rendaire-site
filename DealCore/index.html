@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DealCore - MA仲介支援</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f5f6fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 280px;
+            background: #1e293b;
+            color: #fff;
+            padding: 1.5rem 1rem;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 1.5rem;
+        }
+
+        .phase-badge {
+            font-size: 0.8rem;
+        }
+
+        .case-card {
+            transition: box-shadow .2s;
+            cursor: pointer;
+        }
+
+        .case-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+        }
+
+        .sidebar h5 {
+            font-size: 1rem;
+            color: #94a3b8;
+        }
+
+        .sidebar .btn {
+            width: 100%;
+        }
+
+        .knowledge-stat {
+            font-size: 0.82rem;
+            color: #94a3b8;
+            margin-top: .3rem;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== サイドバー ===== -->
+    <div class="sidebar">
+        <div class="text-center mb-4">
+            <h4 class="fw-bold"><i class="bi bi-briefcase"></i> DealCore</h4>
+            <small class="text-secondary">MA仲介支援システム</small>
+        </div>
+        <hr class="border-secondary">
+
+        <h5><i class="bi bi-chat-dots"></i> ナレッジチャット</h5>
+        <button class="btn btn-outline-light btn-sm mb-3" onclick="openChat()">
+            <i class="bi bi-chat-left-text"></i> チャットを開く
+        </button>
+
+        <h5 class="mt-3"><i class="bi bi-database"></i> ナレッジ状況</h5>
+        <div class="knowledge-stat">
+            <div>ファイル数: <span id="knFileCount">-</span></div>
+            <div>総文字数: <span id="knTotalChars">-</span></div>
+            <div>最終同期: <span id="knLastSync">-</span></div>
+        </div>
+        <button class="btn btn-outline-info btn-sm mt-2" id="btnSync" onclick="runSync()">
+            <i class="bi bi-arrow-repeat"></i> ナレッジ再同期
+        </button>
+
+        <hr class="border-secondary mt-4">
+        <div class="text-center">
+            <small class="text-secondary">© アックスコンサルティング</small>
+        </div>
+    </div>
+
+    <!-- ===== メインコンテンツ ===== -->
+    <div class="main-content">
+        <!-- トップバー -->
+        <div class="top-bar">
+            <h3 class="fw-bold mb-0"><i class="bi bi-kanban"></i> 案件一覧</h3>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted" id="userEmail">読込中...</span>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newCaseModal">
+                    <i class="bi bi-plus-lg"></i> 新規案件作成
+                </button>
+            </div>
+        </div>
+
+        <!-- 案件カード一覧 -->
+        <div class="row g-3" id="caseList">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">案件を読み込み中...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 新規案件モーダル ===== -->
+    <div class="modal fade" id="newCaseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle"></i> 新規案件作成</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">案件名 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="caseName" placeholder="例: ○○会計事務所 事業承継">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">売主名</label>
+                        <input type="text" class="form-control" id="sellerName" placeholder="例: 山田太郎">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">業種</label>
+                        <input type="text" class="form-control" id="industry" placeholder="例: 税理士事務所">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">概要</label>
+                        <textarea class="form-control" id="summary" rows="3" placeholder="案件の概要を入力..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="button" class="btn btn-primary" onclick="createNewCase()">
+                        <i class="bi bi-check-lg"></i> 作成
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        /* ---------- フェーズ定義 ---------- */
+        const PHASES = {
+            '1': { label: 'ノンネーム', color: 'secondary' },
+            '2': { label: 'IM', color: 'primary' },
+            '3': { label: 'TOP面談', color: 'warning' },
+            '4': { label: '基本合意', color: 'orange' },
+            '5': { label: '最終契約', color: 'success' }
+        };
+
+        /* ---------- 初期ロード ---------- */
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUser();
+            loadCases();
+            loadKnowledgeStats();
+        });
+
+        function loadUser() {
+            google.script.run.withSuccessHandler(email => {
+                document.getElementById('userEmail').textContent = email;
+            }).withFailureHandler(err => {
+                document.getElementById('userEmail').textContent = 'エラー';
+            }).getCurrentUserEmail();
+        }
+
+        function loadCases() {
+            google.script.run.withSuccessHandler(renderCases)
+                .withFailureHandler(err => {
+                    document.getElementById('caseList').innerHTML =
+                        '<div class="col-12 text-center py-5 text-danger">' +
+                        '<i class="bi bi-exclamation-triangle fs-1"></i>' +
+                        '<p>案件の読み込みに失敗しました。initDB()を実行してください。</p>' +
+                        '<small>' + err.message + '</small></div>';
+                }).apiGetCases();
+        }
+
+        function renderCases(cases) {
+            const container = document.getElementById('caseList');
+            if (!cases || cases.length === 0) {
+                container.innerHTML =
+                    '<div class="col-12 text-center py-5">' +
+                    '<i class="bi bi-inbox fs-1 text-muted"></i>' +
+                    '<p class="text-muted mt-2">案件がありません。「新規案件作成」から始めましょう。</p></div>';
+                return;
+            }
+
+            container.innerHTML = cases.map(c => {
+                const p = PHASES[String(c.phase)] || PHASES['1'];
+                const badgeClass = p.color === 'orange'
+                    ? 'bg-warning text-dark'
+                    : 'bg-' + p.color;
+                const updated = c.updated_at
+                    ? new Date(c.updated_at).toLocaleDateString('ja-JP')
+                    : '-';
+                return '<div class="col-md-6 col-lg-4">' +
+                    '<div class="card case-card h-100" onclick="openCase(\'' + c.id + '\')">' +
+                    '<div class="card-body">' +
+                    '<div class="d-flex justify-content-between align-items-start mb-2">' +
+                    '<h6 class="card-title fw-bold mb-0">' + escapeHtml(c.name) + '</h6>' +
+                    '<span class="badge phase-badge ' + badgeClass + '">' + p.label + '</span>' +
+                    '</div>' +
+                    '<p class="card-text text-muted small mb-1">' +
+                    '<i class="bi bi-person"></i> ' + escapeHtml(c.seller_name || '-') +
+                    ' &nbsp; <i class="bi bi-building"></i> ' + escapeHtml(c.industry || '-') +
+                    '</p>' +
+                    (c.summary ? '<p class="card-text small">' + escapeHtml(c.summary).substring(0, 80) + '</p>' : '') +
+                    '<div class="text-end"><small class="text-muted">更新: ' + updated + '</small></div>' +
+                    '</div></div></div>';
+            }).join('');
+        }
+
+        /* ---------- 案件作成 ---------- */
+        let isCreating = false;
+        function createNewCase() {
+            if (isCreating) return;
+            const name = document.getElementById('caseName').value.trim();
+            if (!name) { alert('案件名を入力してください。'); return; }
+
+            isCreating = true;
+            const btn = document.querySelector('#newCaseModal .btn-primary');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> 作成中...';
+
+            const data = {
+                name: name,
+                seller_name: document.getElementById('sellerName').value.trim(),
+                industry: document.getElementById('industry').value.trim(),
+                summary: document.getElementById('summary').value.trim(),
+                phase: '1'
+            };
+
+            google.script.run.withSuccessHandler(() => {
+                isCreating = false;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-lg"></i> 作成';
+                bootstrap.Modal.getInstance(document.getElementById('newCaseModal')).hide();
+                document.getElementById('caseName').value = '';
+                document.getElementById('sellerName').value = '';
+                document.getElementById('industry').value = '';
+                document.getElementById('summary').value = '';
+                loadCases();
+            }).withFailureHandler(err => {
+                isCreating = false;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-lg"></i> 作成';
+                alert('作成失敗: ' + err.message);
+            }).apiCreateCase(data);
+        }
+
+        /* ---------- ナレッジ ---------- */
+        function loadKnowledgeStats() {
+            google.script.run.withSuccessHandler(stats => {
+                document.getElementById('knFileCount').textContent =
+                    (stats.fileCount || 0).toLocaleString() + ' 件';
+                document.getElementById('knTotalChars').textContent =
+                    (stats.totalChars || 0).toLocaleString() + ' 文字';
+                document.getElementById('knLastSync').textContent =
+                    stats.lastSync === '未同期' ? '未同期'
+                        : new Date(stats.lastSync).toLocaleString('ja-JP');
+            }).withFailureHandler(() => {
+                document.getElementById('knFileCount').textContent = '-';
+            }).apiGetKnowledgeStats();
+        }
+
+        function runSync() {
+            const btn = document.getElementById('btnSync');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> 同期中...';
+
+            google.script.run.withSuccessHandler(stats => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> ナレッジ再同期';
+                alert('同期完了: 追加 ' + stats.added + '件, 更新 ' + stats.updated + '件');
+                loadKnowledgeStats();
+            }).withFailureHandler(err => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> ナレッジ再同期';
+                alert('同期エラー: ' + err.message);
+            }).apiRunIncrementalSync();
+        }
+
+        /* ---------- 画面遷移 ---------- */
+        let scriptUrl = '';
+        google.script.run.withSuccessHandler(function (url) {
+            scriptUrl = url;
+        }).getScriptUrl();
+
+        function openCase(caseId) {
+            if (!scriptUrl) {
+                google.script.run.withSuccessHandler(function (url) {
+                    scriptUrl = url;
+                    window.top.location.href = url + '?page=case_detail&id=' + caseId;
+                }).getScriptUrl();
+                return;
+            }
+            window.top.location.href = scriptUrl + '?page=case_detail&id=' + caseId;
+        }
+
+        function openChat() {
+            if (!scriptUrl) {
+                google.script.run.withSuccessHandler(function (url) {
+                    scriptUrl = url;
+                    window.open(url + '?page=chat', '_blank', 'width=480,height=700');
+                }).getScriptUrl();
+                return;
+            }
+            window.open(scriptUrl + '?page=chat', '_blank', 'width=480,height=700');
+        }
+
+        /* ---------- ユーティリティ ---------- */
+        function escapeHtml(str) {
+            if (!str) return '';
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+    </script>
+</body>
+
+</html>

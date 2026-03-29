@@ -1,0 +1,59 @@
+import { useTranslations } from "next-intl";
+import { getTranslations, unstable_setRequestLocale } from "next-intl/server";
+import CastCard from "@/components/CastCard";
+import { readSiteData } from "@/lib/store";
+
+export async function generateMetadata({
+    params: { locale },
+}: {
+    params: { locale: string };
+}) {
+    const t = await getTranslations({ locale, namespace: "cast" });
+    return {
+        title: `${t("title")} — TOKYO RENDAIRE`,
+        description: t("subtitle"),
+    };
+}
+
+export default function CastPage({
+    params: { locale },
+}: {
+    params: { locale: string };
+}) {
+    unstable_setRequestLocale(locale);
+    const t = useTranslations("cast");
+    const tcom = useTranslations("common");
+    const siteData = readSiteData();
+    const casts = siteData.casts;
+
+    return (
+        <div className="pt-24 pb-16 md:pt-28 md:pb-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-10">
+                    <h1 className="section-title">{t("title")}</h1>
+                    <p className="section-subtitle">{t("subtitle")}</p>
+                </div>
+
+                {casts.length === 0 ? (
+                    <p className="text-center text-dark-400 py-16">{t("noCastAvailable")}</p>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {casts.map((cast) => (
+                            <CastCard
+                                key={cast.id}
+                                cast={cast}
+                                tAvailable={t("available")}
+                                tUnavailable={t("unavailable")}
+                                tNew={t("newArrival")}
+                                tRecommended={t("recommended")}
+                                tAge={t("age")}
+                                tHeight={t("height")}
+                                tViewDetails={tcom("viewDetails")}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}

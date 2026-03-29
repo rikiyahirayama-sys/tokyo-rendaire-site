@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DealCore - 案件詳細</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f5f6fa;
+        }
+
+        .top-bar {
+            background: #1e293b;
+            color: #fff;
+            padding: .75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar a {
+            color: #94a3b8;
+            text-decoration: none;
+        }
+
+        .top-bar a:hover {
+            color: #fff;
+        }
+
+        .phase-badge {
+            font-size: .85rem;
+        }
+
+        .info-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+        }
+
+        .action-btn {
+            min-width: 140px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== トップバー ===== -->
+    <div class="top-bar">
+        <div class="d-flex align-items-center gap-3">
+            <a href="#" onclick="goHome()" id="backLink"><i class="bi bi-arrow-left"></i> 案件一覧</a>
+            <h5 class="mb-0 fw-bold" id="caseTitle">読込中...</h5>
+        </div>
+        <span class="text-secondary" style="font-size:.85rem;" id="userEmail"></span>
+    </div>
+
+    <div class="container-fluid py-3">
+        <div class="row">
+            <!-- ===== 左カラム: 案件情報 ===== -->
+            <div class="col-lg-8">
+                <!-- 基本情報 -->
+                <div class="info-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-info-circle"></i> 基本情報</h5>
+                        <span class="badge phase-badge" id="phaseBadge">-</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">案件名</label>
+                            <input type="text" class="form-control" id="fName" disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">売主名</label>
+                            <input type="text" class="form-control" id="fSeller" disabled>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">業種</label>
+                            <input type="text" class="form-control" id="fIndustry" disabled>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">フェーズ</label>
+                            <select class="form-select" id="fPhase" disabled>
+                                <option value="1">1 - ノンネーム</option>
+                                <option value="2">2 - IM</option>
+                                <option value="3">3 - TOP面談</option>
+                                <option value="4">4 - 基本合意</option>
+                                <option value="5">5 - 最終契約</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">最終更新</label>
+                            <input type="text" class="form-control" id="fUpdated" disabled readonly>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-muted small">概要</label>
+                            <textarea class="form-control" id="fSummary" rows="3" disabled></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm" id="btnEdit" onclick="toggleEdit()">
+                            <i class="bi bi-pencil"></i> 編集
+                        </button>
+                        <button class="btn btn-primary btn-sm d-none" id="btnSave" onclick="saveCase()">
+                            <i class="bi bi-check-lg"></i> 保存
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm d-none" id="btnCancel" onclick="cancelEdit()">
+                            キャンセル
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ファイルアップロード -->
+                <div class="info-card">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-cloud-arrow-up"></i> ファイルアップロード</h5>
+                    <div class="d-flex gap-2 align-items-end mb-2">
+                        <div class="flex-grow-1">
+                            <input type="file" class="form-control" id="fileInput"
+                                accept=".mp3,.mp4,.m4a,.wav,.txt,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
+                        </div>
+                        <button class="btn btn-success btn-sm" id="btnUpload" onclick="uploadFile()"
+                            style="white-space:nowrap;">
+                            <i class="bi bi-upload"></i> アップロード
+                        </button>
+                    </div>
+                    <small class="text-muted">音声/動画ファイル（MP3, MP4, M4A, WAV）は自動で文字起こし＋議事録生成されます（最大500MB）</small>
+
+                    <!-- Driveフォルダから音声取得して議事録作成 -->
+                    <hr class="my-3">
+                    <div class="mb-2">
+                        <p class="small mb-2"><i class="bi bi-info-circle text-primary"></i>
+                            音声ファイルをGoogleドライブの<br>
+                            <strong>「DealCore → _音声アップロード」</strong>フォルダに入れてから<br>
+                            下のボタンを押してください。（サイズ制限なし）
+                        </p>
+                        <button class="btn btn-outline-primary btn-sm" id="btnTranscribeDrive"
+                            onclick="transcribeFromDrive()">
+                            <i class="bi bi-mic"></i> 議事録を作成する
+                        </button>
+                    </div>
+
+                    <div id="uploadProgress" class="d-none mt-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <span id="uploadStatusText" class="small text-primary fw-bold">アップロード中...</span>
+                        </div>
+                    </div>
+                    <div id="uploadResult" class="d-none mt-2">
+                        <div class="alert alert-success py-2 mb-0 small" id="uploadResultText"></div>
+                    </div>
+                </div>
+
+                <!-- アップロード済みファイル -->
+                <div class="info-card">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-folder2-open"></i> アップロードファイル</h5>
+                    <div id="filesList">
+                        <p class="text-muted small">読込中...</p>
+                    </div>
+                </div>
+
+                <!-- 生成済み資料 -->
+                <div class="info-card">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-richtext"></i> 生成済み資料</h5>
+                    <div id="docsList">
+                        <p class="text-muted small">読込中...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 右カラム: アクション ===== -->
+            <div class="col-lg-4">
+                <div class="info-card">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-lightning"></i> アクション</h5>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary action-btn" onclick="openCaseChat()">
+                            <i class="bi bi-chat-dots"></i> 資料作成チャット
+                        </button>
+                        <button class="btn btn-warning action-btn" onclick="openAdvisor()">
+                            <i class="bi bi-compass"></i> 営業方針を相談
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const PHASES = {
+            '1': { label: 'ノンネーム', color: 'secondary' },
+            '2': { label: 'IM', color: 'primary' },
+            '3': { label: 'TOP面談', color: 'warning' },
+            '4': { label: '基本合意', color: 'warning' },
+            '5': { label: '最終契約', color: 'success' }
+        };
+
+        let caseId = '<?= caseId ?>';
+        let caseData = null;
+        let scriptUrl = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            google.script.run.withSuccessHandler(url => { scriptUrl = url; }).getScriptUrl();
+            google.script.run.withSuccessHandler(email => {
+                document.getElementById('userEmail').textContent = email;
+            }).getCurrentUserEmail();
+
+            if (caseId) {
+                loadCaseDetail();
+                loadFiles();
+                loadDocs();
+            } else {
+                document.getElementById('caseTitle').textContent = '案件IDが指定されていません';
+            }
+        });
+
+        function loadCaseDetail() {
+            google.script.run.withSuccessHandler(c => {
+                if (!c) { document.getElementById('caseTitle').textContent = '案件が見つかりません'; return; }
+                caseData = c;
+                document.getElementById('caseTitle').textContent = c.name;
+                document.getElementById('fName').value = c.name || '';
+                document.getElementById('fSeller').value = c.seller_name || '';
+                document.getElementById('fIndustry').value = c.industry || '';
+                document.getElementById('fPhase').value = String(c.phase || '1');
+                document.getElementById('fSummary').value = c.summary || '';
+                document.getElementById('fUpdated').value = c.updated_at ? new Date(c.updated_at).toLocaleString('ja-JP') : '-';
+                const p = PHASES[String(c.phase)] || PHASES['1'];
+                const badge = document.getElementById('phaseBadge');
+                badge.textContent = p.label;
+                badge.className = 'badge phase-badge bg-' + p.color;
+            }).apiGetCaseById(caseId);
+        }
+
+        function loadFiles() {
+            google.script.run.withSuccessHandler(files => {
+                const el = document.getElementById('filesList');
+                if (!files || files.length === 0) {
+                    el.innerHTML = '<p class="text-muted small mb-0">ファイルなし</p>';
+                    return;
+                }
+                el.innerHTML = '<ul class="list-group list-group-flush">' +
+                    files.map(f => {
+                        const hasText = f.extracted_text && f.extracted_text.length > 0;
+                        const charBadge = hasText
+                            ? '<span class="badge bg-success">' + f.extracted_text.length.toLocaleString() + '文字</span>'
+                            : '';
+                        return '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                            '<span><i class="bi bi-file-earmark"></i> ' + escapeHtml(f.filename) + '</span>' +
+                            '<span class="d-flex gap-2 align-items-center">' + charBadge +
+                            '<span class="badge bg-light text-dark">' + (f.filetype || '-') + '</span></span>' +
+                            '</li>';
+                    }).join('') + '</ul>';
+            }).withFailureHandler(() => {
+                document.getElementById('filesList').innerHTML = '<p class="text-muted small mb-0">読込失敗</p>';
+            }).apiGetFilesByCase(caseId);
+        }
+
+        function loadDocs() {
+            google.script.run.withSuccessHandler(docs => {
+                const el = document.getElementById('docsList');
+                if (!docs || docs.length === 0) {
+                    el.innerHTML = '<p class="text-muted small mb-0">生成済み資料なし</p>';
+                    return;
+                }
+                el.innerHTML = '<ul class="list-group list-group-flush">' +
+                    docs.map(d => '<li class="list-group-item">' +
+                        '<i class="bi bi-file-earmark-check text-success"></i> ' + escapeHtml(d.doc_type) +
+                        ' <small class="text-muted">(' + new Date(d.created_at).toLocaleDateString('ja-JP') + ')</small>' +
+                        '</li>').join('') + '</ul>';
+            }).withFailureHandler(() => {
+                document.getElementById('docsList').innerHTML = '<p class="text-muted small mb-0">読込失敗</p>';
+            }).apiGetDocumentsByCase(caseId);
+        }
+
+        /* ---------- 編集 ---------- */
+        function toggleEdit() {
+            ['fName', 'fSeller', 'fIndustry', 'fPhase', 'fSummary'].forEach(id => {
+                document.getElementById(id).disabled = false;
+            });
+            document.getElementById('btnEdit').classList.add('d-none');
+            document.getElementById('btnSave').classList.remove('d-none');
+            document.getElementById('btnCancel').classList.remove('d-none');
+        }
+
+        function cancelEdit() {
+            loadCaseDetail();
+            ['fName', 'fSeller', 'fIndustry', 'fPhase', 'fSummary'].forEach(id => {
+                document.getElementById(id).disabled = true;
+            });
+            document.getElementById('btnEdit').classList.remove('d-none');
+            document.getElementById('btnSave').classList.add('d-none');
+            document.getElementById('btnCancel').classList.add('d-none');
+        }
+
+        function saveCase() {
+            const data = {
+                name: document.getElementById('fName').value.trim(),
+                seller_name: document.getElementById('fSeller').value.trim(),
+                industry: document.getElementById('fIndustry').value.trim(),
+                phase: document.getElementById('fPhase').value,
+                summary: document.getElementById('fSummary').value.trim()
+            };
+            google.script.run.withSuccessHandler(() => {
+                cancelEdit();
+                loadCaseDetail();
+            }).withFailureHandler(err => {
+                alert('保存失敗: ' + err.message);
+            }).apiUpdateCase(caseId, data);
+        }
+
+        /* ---------- 画面遷移 ---------- */
+        function goHome() {
+            if (scriptUrl) { window.top.location.href = scriptUrl; }
+            else { google.script.run.withSuccessHandler(url => { window.top.location.href = url; }).getScriptUrl(); }
+        }
+
+        function openCaseChat() {
+            if (scriptUrl) { window.open(scriptUrl + '?page=case_chat&id=' + caseId, '_blank', 'width=520,height=750'); }
+            else { google.script.run.withSuccessHandler(url => { window.open(url + '?page=case_chat&id=' + caseId, '_blank', 'width=520,height=750'); }).getScriptUrl(); }
+        }
+
+        function openAdvisor() {
+            if (scriptUrl) { window.open(scriptUrl + '?page=case_chat&id=' + caseId + '&tab=adv', '_blank', 'width=520,height=750'); }
+            else { google.script.run.withSuccessHandler(url => { window.open(url + '?page=case_chat&id=' + caseId + '&tab=adv', '_blank', 'width=520,height=750'); }).getScriptUrl(); }
+        }
+
+        /* ---------- ファイルアップロード ---------- */
+        let isUploading = false;
+
+        function uploadFile() {
+            if (isUploading) return;
+            const input = document.getElementById('fileInput');
+            if (!input.files || !input.files[0]) {
+                alert('ファイルを選択してください。');
+                return;
+            }
+            const file = input.files[0];
+
+            // サイズチェック（500MB）
+            if (file.size > 500 * 1024 * 1024) {
+                alert('ファイルサイズが500MBを超えています（' + Math.round(file.size / 1024 / 1024) + 'MB）。');
+                return;
+            }
+
+            isUploading = true;
+            document.getElementById('btnUpload').disabled = true;
+            document.getElementById('uploadResult').classList.add('d-none');
+            document.getElementById('uploadProgress').classList.remove('d-none');
+
+            // 音声・動画か判定してメッセージ切り替え
+            const audioExts = ['mp3', 'mp4', 'm4a', 'wav'];
+            const ext = file.name.split('.').pop().toLowerCase();
+            const isAudio = audioExts.includes(ext);
+            document.getElementById('uploadStatusText').textContent =
+                isAudio ? '音声を解析中です（数分かかります）...' : 'アップロード中...';
+
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                const base64 = ev.target.result.split(',')[1];
+                google.script.run
+                    .withSuccessHandler(result => {
+                        isUploading = false;
+                        document.getElementById('btnUpload').disabled = false;
+                        document.getElementById('uploadProgress').classList.add('d-none');
+                        document.getElementById('uploadResult').classList.remove('d-none');
+                        var msg = '✅ ' + escapeHtml(result.filename) + ' — ' + result.message;
+                        if (result.docUrl) {
+                            msg += ' <a href="' + result.docUrl + '" target="_blank" class="fw-bold">📄 Googleドキュメントで開く</a>';
+                        }
+                        document.getElementById('uploadResultText').innerHTML = msg;
+                        input.value = '';
+                        loadFiles();
+                        loadDocs();
+                    })
+                    .withFailureHandler(err => {
+                        isUploading = false;
+                        document.getElementById('btnUpload').disabled = false;
+                        document.getElementById('uploadProgress').classList.add('d-none');
+                        alert('アップロード失敗: ' + err.message);
+                    })
+                    .apiUploadFile(caseId, base64, file.name, file.type || 'application/octet-stream');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* ---------- Driveフォルダから音声取得→議事録作成 ---------- */
+        function transcribeFromDrive() {
+            if (isUploading) return;
+
+            isUploading = true;
+            document.getElementById('btnTranscribeDrive').disabled = true;
+            document.getElementById('btnUpload').disabled = true;
+            document.getElementById('uploadResult').classList.add('d-none');
+            document.getElementById('uploadProgress').classList.remove('d-none');
+            document.getElementById('uploadStatusText').textContent =
+                '_音声アップロードフォルダを確認中...';
+
+            google.script.run
+                .withSuccessHandler(function (result) {
+                    isUploading = false;
+                    document.getElementById('btnTranscribeDrive').disabled = false;
+                    document.getElementById('btnUpload').disabled = false;
+                    document.getElementById('uploadProgress').classList.add('d-none');
+                    document.getElementById('uploadResult').classList.remove('d-none');
+                    var msg = '✅ ' + escapeHtml(result.filename) + ' — ' + result.message;
+                    if (result.docUrl) {
+                        msg += ' <a href="' + result.docUrl + '" target="_blank" class="fw-bold">📄 Googleドキュメントで開く</a>';
+                    }
+                    document.getElementById('uploadResultText').innerHTML = msg;
+                    loadFiles();
+                    loadDocs();
+                })
+                .withFailureHandler(function (err) {
+                    isUploading = false;
+                    document.getElementById('btnTranscribeDrive').disabled = false;
+                    document.getElementById('btnUpload').disabled = false;
+                    document.getElementById('uploadProgress').classList.add('d-none');
+                    alert('議事録作成失敗: ' + err.message);
+                })
+                .apiTranscribeFromDrive(caseId);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+    </script>
+</body>
+
+</html>

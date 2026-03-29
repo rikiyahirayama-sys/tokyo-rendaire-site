@@ -1,0 +1,67 @@
+import { useTranslations } from "next-intl";
+import { getTranslations, unstable_setRequestLocale } from "next-intl/server";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import WeChatButton from "@/components/WeChatButton";
+import LINEButton from "@/components/LINEButton";
+import TelegramButton from "@/components/TelegramButton";
+
+export async function generateMetadata({
+    params: { locale },
+}: {
+    params: { locale: string };
+}) {
+    const t = await getTranslations({ locale, namespace: "contact" });
+    return {
+        title: `${t("title")} — TOKYO RENDAIRE`,
+        description: t("subtitle"),
+    };
+}
+
+export default function ContactPage({
+    params: { locale },
+}: {
+    params: { locale: string };
+}) {
+    unstable_setRequestLocale(locale);
+    const t = useTranslations("contact");
+
+    return (
+        <div className="pt-24 pb-16 md:pt-28 md:pb-20">
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-12">
+                    <h1 className="section-title">{t("title")}</h1>
+                    <p className="section-subtitle">{t("subtitle")}</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                    <div className="card p-6 text-center">
+                        <div className="mb-4">
+                            <WhatsAppButton text={t("whatsapp")} />
+                        </div>
+                    </div>
+                    <div className="card p-6 text-center">
+                        <div className="mb-4">
+                            <WeChatButton text={t("wechat")} />
+                        </div>
+                        <p className="text-dark-500 text-xs">{t("wechatId")}: TOKYORENDAIRE</p>
+                    </div>
+                    <div className="card p-6 text-center">
+                        <div className="mb-4">
+                            <LINEButton text={t("line")} />
+                        </div>
+                    </div>
+                    <div className="card p-6 text-center">
+                        <div className="mb-4">
+                            <TelegramButton text={t("telegram")} />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="text-center">
+                    <p className="text-dark-400 text-sm mb-2">{t("responseTime")}</p>
+                    <p className="text-dark-500 text-xs">{t("autoReply")}</p>
+                </div>
+            </div>
+        </div>
+    );
+}

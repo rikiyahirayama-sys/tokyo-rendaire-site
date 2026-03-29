@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+@layer base {
+    body {
+        @apply bg-dark-950 text-white antialiased;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply inline-flex items-center justify-center px-8 py-3 bg-gradient-to-r from-primary-800 to-primary-700 text-white font-semibold rounded-lg hover:from-primary-700 hover:to-primary-600 transition-all duration-300 shadow-lg shadow-primary-900/30 hover:shadow-primary-800/40;
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center justify-center px-8 py-3 border border-gold-500/60 text-gold-400 font-semibold rounded-lg hover:bg-gold-500/10 hover:border-gold-400 hover:text-gold-300 transition-all duration-300;
+    }
+
+    .btn-whatsapp {
+        @apply inline-flex items-center justify-center gap-2 px-8 py-3 bg-[#25D366] text-white font-semibold rounded-lg hover:bg-[#20BD5A] transition-all duration-300 shadow-lg;
+    }
+
+    .btn-wechat {
+        @apply inline-flex items-center justify-center gap-2 px-8 py-3 bg-[#07C160] text-white font-semibold rounded-lg hover:bg-[#06AE56] transition-all duration-300 shadow-lg;
+    }
+
+    .card {
+        @apply bg-dark-900/60 backdrop-blur-sm border border-dark-700/30 rounded-2xl overflow-hidden;
+    }
+
+    .card-hover {
+        @apply card hover:border-primary-700/40 hover:shadow-lg hover:shadow-primary-900/10 transition-all duration-300;
+    }
+
+    .section-title {
+        @apply font-display text-3xl md:text-4xl lg:text-5xl font-bold text-white;
+    }
+
+    .section-subtitle {
+        @apply text-dark-400 text-lg mt-3;
+    }
+
+    .gold-accent {
+        @apply text-transparent bg-clip-text bg-gradient-to-r from-gold-300 to-gold-500;
+    }
+
+    .gradient-border {
+        @apply relative before:absolute before:inset-0 before:rounded-2xl before:p-[1px] before:bg-gradient-to-r before:from-primary-700 before:to-gold-500 before:-z-10;
+    }
+
+    .input-field {
+        @apply bg-dark-800/60 border border-dark-700/50 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors;
+    }
+}
