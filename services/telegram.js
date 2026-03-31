@@ -2,7 +2,6 @@
 // Telegram Bot サービス
 // チャンネル投稿（テキスト・画像）
 // ============================================
-require('dotenv').config();
 const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
@@ -13,7 +12,6 @@ let CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID || '';
 
 // 再初期化
 function reinitialize() {
-    require('dotenv').config();
     BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
     CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID || '';
 }

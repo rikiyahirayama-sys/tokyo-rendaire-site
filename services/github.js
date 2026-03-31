@@ -2,7 +2,6 @@
 // GitHub サービス
 // ブログ記事のデプロイ（REST API経由）
 // ============================================
-require('dotenv').config();
 const fetch = require('node-fetch');
 
 let GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
@@ -10,7 +9,6 @@ let GITHUB_REPO = process.env.GITHUB_REPO || '';
 
 // 再初期化
 function reinitialize() {
-    require('dotenv').config();
     GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
     GITHUB_REPO = process.env.GITHUB_REPO || '';
 }

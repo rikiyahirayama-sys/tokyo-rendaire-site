@@ -2,7 +2,6 @@
 // Twitter(X) 投稿サービス
 // 英語アカウント・日本語アカウントの2系統
 // ============================================
-require('dotenv').config();
 const { TwitterApi } = require('twitter-api-v2');
 const fs = require('fs');
 const path = require('path');
@@ -38,7 +37,6 @@ initClients();
 
 // 再初期化
 function reinitialize() {
-    require('dotenv').config();
     clientEN = null;
     clientJA = null;
     initClients();

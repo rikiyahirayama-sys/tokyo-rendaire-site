@@ -2,7 +2,6 @@
 // Claude AI サービス（Anthropic SDK）
 // 投稿文生成・翻訳・ブログ記事生成
 // ============================================
-require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 
 const MODEL = 'claude-sonnet-4-20250514';
@@ -18,7 +17,6 @@ initClient();
 
 // 再初期化（設定変更時に呼ぶ）
 function reinitialize() {
-    require('dotenv').config();
     client = null;
     initClient();
 }

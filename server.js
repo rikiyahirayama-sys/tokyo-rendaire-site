@@ -2,7 +2,7 @@
 // Tokyo Rendaire 管理サーバー
 // Express + 静的ファイル + API
 // ============================================
-require('dotenv').config();
+try { require('dotenv').config(); } catch (e) { }
 
 const express = require('express');
 const cors = require('cors');
@@ -41,4 +41,12 @@ server.on('listening', () => {
     console.log('✅ Tokyo Rendaire 管理サーバー起動');
     console.log('📄 LP: http://localhost:' + PORT);
     console.log('⚙️  管理画面: http://localhost:' + PORT + '/admin.html');
+    // 環境変数の読み込み状態を表示
+    console.log('🔑 ENV check:', {
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ? '✓ set' : '✗ missing',
+        TWITTER_API_KEY: process.env.TWITTER_API_KEY ? '✓ set' : '✗ missing',
+        TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN ? '✓ set' : '✗ missing',
+        GITHUB_TOKEN: process.env.GITHUB_TOKEN ? '✓ set' : '✗ missing',
+        ADMIN_ID: process.env.ADMIN_ID ? '✓ set' : '✗ missing',
+    });
 });

@@ -13,19 +13,36 @@ const twitter = require('../services/twitter');
 const telegram = require('../services/telegram');
 const github = require('../services/github');
 
-// .envファイルをパースして読み込む
+// .envファイルをパースして読み込む（Render.com対応: .envがなければprocess.envから取得）
+const ENV_KEYS = [
+    'ADMIN_ID', 'ADMIN_PASSWORD', 'ADMIN_SESSION_SECRET', 'PORT', 'SITE_URL',
+    'ANTHROPIC_API_KEY',
+    'TWITTER_API_KEY', 'TWITTER_API_SECRET', 'TWITTER_ACCESS_TOKEN', 'TWITTER_ACCESS_SECRET',
+    'TWITTER_API_KEY_JA', 'TWITTER_API_SECRET_JA', 'TWITTER_ACCESS_TOKEN_JA', 'TWITTER_ACCESS_SECRET_JA',
+    'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHANNEL_ID',
+    'GITHUB_TOKEN', 'GITHUB_REPO'
+];
+
 function readEnv() {
-    if (!fs.existsSync(envPath)) return {};
-    const content = fs.readFileSync(envPath, 'utf-8');
+    // まず.envファイルから読む
     const env = {};
-    content.split('\n').forEach(line => {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('#')) return;
-        const idx = trimmed.indexOf('=');
-        if (idx === -1) return;
-        const key = trimmed.substring(0, idx).trim();
-        const val = trimmed.substring(idx + 1).trim();
-        env[key] = val;
+    if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, 'utf-8');
+        content.split('\n').forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('#')) return;
+            const idx = trimmed.indexOf('=');
+            if (idx === -1) return;
+            const key = trimmed.substring(0, idx).trim();
+            const val = trimmed.substring(idx + 1).trim();
+            env[key] = val;
+        });
+    }
+    // .envに無いキーはprocess.envから補完（Render.com等のホスティング環境対応）
+    ENV_KEYS.forEach(key => {
+        if (!env[key] && process.env[key]) {
+            env[key] = process.env[key];
+        }
     });
     return env;
 }
