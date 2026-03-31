@@ -47,7 +47,7 @@ ${body}
         fs.writeFileSync(path.join(blogDir, `${safeSlug}.html`), html, "utf-8");
 
         if (process.env.GITHUB_TOKEN && process.env.GITHUB_REPO) {
-            const github = require("../../../../services/github");
+            const github = require("../../../../../services/github");
             await github.pushFile(`blog/${safeSlug}.html`, html, `Add blog: ${title}`);
         }
 

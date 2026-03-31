@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
     }
     try {
         const { posts } = await request.json();
-        const twitter = require("../../../../services/twitter");
-        const telegram = require("../../../../services/telegram");
+        const twitter = require("../../../../../services/twitter");
+        const telegram = require("../../../../../services/telegram");
         const results: { platform: string; text: string;[k: string]: unknown }[] = [];
 
         if (posts.twitter_en && Array.isArray(posts.twitter_en)) {

@@ -22,7 +22,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
         }
 
         if (process.env.GITHUB_TOKEN && process.env.GITHUB_REPO) {
-            const github = require("../../../../services/github");
+            const github = require("../../../../../services/github");
             await github.deleteFile(`blog/${safeSlug}.html`, `Delete blog: ${safeSlug}`);
         }
 

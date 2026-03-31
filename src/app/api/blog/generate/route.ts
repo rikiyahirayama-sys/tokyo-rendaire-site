@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
     try {
         const { topic } = await request.json();
-        const claude = require("../../../../services/claude");
+        const claude = require("../../../../../services/claude");
         const result = await claude.generateBlogArticle(topic);
         if (result.error) return NextResponse.json({ success: false, error: result.error });
         return NextResponse.json({ success: true, article: result });

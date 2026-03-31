@@ -17,9 +17,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         if (!cast) return NextResponse.json({ success: false, error: "キャストが見つかりません" }, { status: 404 });
 
         // Dynamically load services
-        const claude = require("../../../../services/claude");
-        const twitter = require("../../../../services/twitter");
-        const telegram = require("../../../../services/telegram");
+        const claude = require("../../../../../../services/claude");
+        const twitter = require("../../../../../../services/twitter");
+        const telegram = require("../../../../../../services/telegram");
 
         const posts = await claude.generateNewCastAnnouncement(cast);
         if (posts.error) return NextResponse.json({ success: false, error: posts.error });

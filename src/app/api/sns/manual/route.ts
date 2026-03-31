@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
             imagePath = path.join("uploads", filename);
         }
 
-        const twitter = require("../../../../services/twitter");
-        const telegram = require("../../../../services/telegram");
+        const twitter = require("../../../../../services/twitter");
+        const telegram = require("../../../../../services/telegram");
         const results: { platform: string;[k: string]: unknown }[] = [];
 
         for (const platform of platformList) {

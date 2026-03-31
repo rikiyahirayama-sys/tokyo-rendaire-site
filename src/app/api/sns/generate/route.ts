@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
         // This route handles /api/sns/generate only — other sns routes have their own files
         const { topics } = await request.json();
-        const claude = require("../../../../services/claude");
+        const claude = require("../../../../../services/claude");
         const result = await claude.generateWeeklyPosts(topics);
         if (result.error) return NextResponse.json({ success: false, error: result.error });
         return NextResponse.json({ success: true, posts: result });

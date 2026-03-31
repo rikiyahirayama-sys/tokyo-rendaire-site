@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
     try {
         const { type, data } = await request.json();
-        const claude = require("../../../../services/claude");
+        const claude = require("../../../../../services/claude");
         let posts = null;
 
         switch (type) {

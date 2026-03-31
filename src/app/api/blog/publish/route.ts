@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
         // Push to GitHub if configured
         if (process.env.GITHUB_TOKEN && process.env.GITHUB_REPO) {
-            const github = require("../../../../services/github");
+            const github = require("../../../../../services/github");
             await github.pushFile(`blog/${safeSlug}.html`, html, `Add blog: ${title}`);
         }
 
