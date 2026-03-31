@@ -1107,8 +1107,15 @@
             try {
                 const res = await fetch(API + url, {
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     ...opts
                 });
+                if (res.status === 401) {
+                    toast('セッション切れです。再ログインしてください', 'error');
+                    document.getElementById('login-screen').style.display = 'flex';
+                    document.getElementById('main-screen').style.display = 'none';
+                    return { success: false, error: 'Unauthorized', message: 'セッション切れ' };
+                }
                 const ct = res.headers.get('content-type') || '';
                 if (!ct.includes('application/json')) {
                     toast('APIサーバーに接続できません。管理画面はExpressサーバー経由でアクセスしてください。', 'error');

@@ -9,7 +9,7 @@ function getSession(request: NextRequest): boolean {
 // POST /api/auth/settings/test — test external service connection
 export async function POST(request: NextRequest) {
     if (!getSession(request)) {
-        return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ success: false, message: "セッション切れです。再ログインしてください", error: "Unauthorized" }, { status: 401 });
     }
     try {
         const { service } = await request.json();
