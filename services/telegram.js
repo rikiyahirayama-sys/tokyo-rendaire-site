@@ -51,8 +51,8 @@ async function postToChannel(text, imagePath) {
             }
         }
 
-        // テキストのみ投稿
-        const res = await fetch(apiUrl('sendMessage'), {
+        // テキストのみ投稿（Markdownパースエラー時はプレーンテキストで再試行）
+        let res = await fetch(apiUrl('sendMessage'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -61,10 +61,22 @@ async function postToChannel(text, imagePath) {
                 parse_mode: 'Markdown'
             })
         });
-        const data = await res.json();
+        let data = await res.json();
+        if (!data.ok && data.description && data.description.includes("can't parse")) {
+            console.log('[Telegram] Markdownパースエラー、プレーンテキストで再試行');
+            res = await fetch(apiUrl('sendMessage'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHANNEL_ID,
+                    text: text
+                })
+            });
+            data = await res.json();
+        }
         if (!data.ok) {
-            console.error('[Telegram] API エラー:', data.description);
-            return { success: false, error: data.description };
+            console.error('[Telegram] API エラー:', data.error_code, data.description);
+            return { success: false, error: `[${data.error_code}] ${data.description}` };
         }
         console.log(`[Telegram] 投稿成功 messageId=${data.result.message_id}`);
         return { success: true, messageId: String(data.result.message_id) };

@@ -72,8 +72,24 @@ async function postTweet(text, imagePath, account = 'en') {
         console.log(`[Twitter] 投稿成功 account=${account} tweetId=${result.data.id}`);
         return { success: true, tweetId: result.data.id };
     } catch (e) {
+        // X APIエラーの詳細を出力
+        const code = e.code || e.statusCode || '';
+        const data = e.data ? JSON.stringify(e.data) : '';
+        const rateLimit = e.rateLimit ? JSON.stringify(e.rateLimit) : '';
         console.error(`[Twitter] 投稿失敗 account=${account}:`, e.message);
-        return { success: false, error: e.message };
+        if (code) console.error(`[Twitter] エラーコード: ${code}`);
+        if (data) console.error(`[Twitter] レスポンスデータ: ${data}`);
+        if (rateLimit) console.error(`[Twitter] レートリミット: ${rateLimit}`);
+        // よくあるエラーの日本語説明を付加
+        let detail = e.message;
+        if (e.code === 403 || e.statusCode === 403) {
+            detail += ' （権限エラー: X Developer PortalでApp permissionsがRead and Writeになっているか確認し、Access Tokenを再生成してください）';
+        } else if (e.code === 429 || e.statusCode === 429) {
+            detail += ' （レートリミット: しばらく待ってから再試行してください）';
+        } else if (e.code === 401 || e.statusCode === 401) {
+            detail += ' （認証エラー: API Key/Secretが正しいか確認してください）';
+        }
+        return { success: false, error: detail };
     }
 }
 

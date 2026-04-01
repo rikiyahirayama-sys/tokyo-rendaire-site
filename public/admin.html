@@ -1004,11 +1004,12 @@
                         <th>プラットフォーム</th>
                         <th>内容</th>
                         <th>ステータス</th>
+                        <th>詳細</th>
                     </tr>
                 </thead>
                 <tbody id="history-list">
                     <tr>
-                        <td colspan="4" style="text-align:center;color:var(--text-muted)">読み込み中...</td>
+                        <td colspan="5" style="text-align:center;color:var(--text-muted)">読み込み中...</td>
                     </tr>
                 </tbody>
             </table>
@@ -1748,21 +1749,47 @@
             const tbody = document.getElementById('history-list');
             const history = res.history || [];
             if (history.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">履歴がありません</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">履歴がありません</td></tr>';
                 return;
             }
-            tbody.innerHTML = history.map(h => {
+            // 各バッチの個別結果を1行ずつ展開표示
+            const rows = [];
+            history.forEach(h => {
                 const date = new Date(h.createdAt).toLocaleString('ja-JP');
-                const platforms = (h.results || []).map(r => r.platform).join(', ') || h.platform || h.type || '';
-                const text = h.text || (h.results && h.results[0] ? h.results[0].text : '') || h.type || '';
-                const hasError = (h.results || []).some(r => !r.success);
-                return `<tr>
+                const results = h.results || [];
+                if (results.length === 0) {
+                    // resultsがない場合（旧形式）
+                    const pf = h.platform || h.type || '';
+                    const text = h.text || '';
+                    rows.push(`<tr>
       <td style="white-space:nowrap;color:var(--text-muted)">${date}</td>
-      <td>${escHtml(platforms)}</td>
+      <td>${escHtml(pf)}</td>
       <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(text.substring(0, 80))}</td>
-      <td>${hasError ? '<span style="color:var(--red)">❌ エラーあり</span>' : '<span style="color:var(--green)">✅ 成功</span>'}</td>
-    </tr>`;
-            }).join('');
+      <td><span style="color:var(--text-muted)">-</span></td>
+      <td></td>
+    </tr>`);
+                } else {
+                    results.forEach(r => {
+                        const pfName = platformNames[r.platform] || r.platform || '';
+                        const text = r.text || h.text || '';
+                        const ok = r.success;
+                        const status = ok
+                            ? '<span style="color:var(--green)">✅ 成功</span>'
+                            : '<span style="color:var(--red)">❌ 失敗</span>';
+                        const detail = ok
+                            ? (r.tweetId ? 'ID: ' + r.tweetId : r.messageId ? 'MsgID: ' + r.messageId : '')
+                            : '<span style="color:var(--red);font-size:12px">' + escHtml(r.error || '不明なエラー') + '</span>';
+                        rows.push(`<tr>
+      <td style="white-space:nowrap;color:var(--text-muted)">${date}</td>
+      <td>${escHtml(pfName)}</td>
+      <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(text)}">${escHtml(text.substring(0, 80))}</td>
+      <td>${status}</td>
+      <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${escHtml(r.error || '')}">${detail}</td>
+    </tr>`);
+                    });
+                }
+            });
+            tbody.innerHTML = rows.join('');
         }
 
         const platformNames = { twitter_en: 'X英語', twitter_ja: 'X日本語', telegram: 'Telegram' };

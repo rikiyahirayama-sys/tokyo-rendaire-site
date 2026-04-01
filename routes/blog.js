@@ -173,10 +173,16 @@ function getLocalArticles() {
 router.post('/generate', async (req, res) => {
     try {
         const { topic } = req.body;
+        console.log('[Blog] 記事生成開始 topic:', topic || '(自動)');
         const result = await claude.generateBlogArticle(topic);
-        if (result.error) return res.json({ success: false, error: result.error });
+        if (result.error) {
+            console.error('[Blog] 生成エラー:', result.error);
+            return res.json({ success: false, error: result.error });
+        }
+        console.log('[Blog] 記事生成成功 title:', result.title, 'slug:', result.slug);
         return res.json({ success: true, article: result });
     } catch (e) {
+        console.error('[Blog] 記事生成例外:', e.message);
         return res.status(500).json({ success: false, error: e.message });
     }
 });

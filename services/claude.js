@@ -320,7 +320,8 @@ async function generateBlogArticle(topic) {
             ? `トピック: ${topic}`
             : 'Tokyo Rendaire / 東京のナイトライフ / 六本木に関するSEOに強いトピックを自動提案して使ってください';
 
-        return await askJSON(`
+        console.log('[Claude] ブログ記事生成開始 topic:', topic || '(自動)');
+        const result = await askJSON(`
 ${topicPrompt}
 
 英語のSEOブログ記事をJSON形式で生成してください:
@@ -328,7 +329,7 @@ ${topicPrompt}
   "title": "記事タイトル（英語）",
   "slug": "url-friendly-slug",
   "meta": "メタディスクリプション（英語、160字以内）",
-  "body": "HTML形式の記事本文（2000〜3000語、h2/h3見出し付き）"
+  "body": "HTML形式の記事本文（1500〜2500語、h2/h3見出し付き）"
 }
 
 記事の要件:
@@ -337,8 +338,12 @@ ${topicPrompt}
 - h2, h3タグで適切に構造化
 - 本文中に自然な形でTokyo Rendaire（tokyorendaire.com）への誘導を1〜2回含める
 - 読者に価値のある情報を提供
-`, 8192);
+- JSONのbody内のHTMLは1行にまとめてください（改行コードは使わず、pタグやbrタグで区切る）
+`, 16384);
+        console.log('[Claude] ブログ記事生成成功 title:', result.title);
+        return result;
     } catch (e) {
+        console.error('[Claude] ブログ記事生成エラー:', e.message);
         return { error: e.message };
     }
 }
