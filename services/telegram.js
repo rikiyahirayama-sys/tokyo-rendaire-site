@@ -24,11 +24,16 @@ function apiUrl(method) {
 // チャンネルに投稿
 async function postToChannel(text, imagePath) {
     try {
-        // テキストの正規化（オブジェクトが渡された場合の対応）
-        if (text && typeof text === 'object') {
+        // テキストの正規化（オブジェクト・配列・数値など文字列以外が渡された場合の対応）
+        if (Array.isArray(text)) {
+            text = text.map(t => (typeof t === 'object' && t !== null) ? (t.text || t.caption || '') : String(t || '')).join('\n');
+        } else if (text && typeof text === 'object') {
             text = text.text || text.caption || JSON.stringify(text);
         }
-        text = String(text || '');
+        if (typeof text !== 'string') {
+            text = String(text || '');
+        }
+        text = text.trim();
         console.log(`[Telegram] 投稿開始 text=${text.substring(0, 50)}...`);
         if (!BOT_TOKEN || !CHANNEL_ID) {
             console.error('[Telegram] Bot TokenまたはChannel ID未設定');

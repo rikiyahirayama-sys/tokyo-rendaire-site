@@ -12,25 +12,53 @@ let clientJA = null;
 // クライアント初期化
 function initClients() {
     // 英語アカウント
-    if (process.env.TWITTER_API_KEY && process.env.TWITTER_API_SECRET &&
-        process.env.TWITTER_ACCESS_TOKEN && process.env.TWITTER_ACCESS_SECRET) {
+    const enKey = (process.env.TWITTER_API_KEY || '').trim();
+    const enSecret = (process.env.TWITTER_API_SECRET || '').trim();
+    const enAccessToken = (process.env.TWITTER_ACCESS_TOKEN || '').trim();
+    const enAccessSecret = (process.env.TWITTER_ACCESS_SECRET || '').trim();
+
+    console.log('[Twitter] ENV check EN:', {
+        TWITTER_API_KEY: enKey ? enKey.substring(0, 6) + '...(' + enKey.length + ')' : 'NOT SET',
+        TWITTER_API_SECRET: enSecret ? enSecret.substring(0, 6) + '...(' + enSecret.length + ')' : 'NOT SET',
+        TWITTER_ACCESS_TOKEN: enAccessToken ? enAccessToken.substring(0, 6) + '...(' + enAccessToken.length + ')' : 'NOT SET',
+        TWITTER_ACCESS_SECRET: enAccessSecret ? enAccessSecret.substring(0, 6) + '...(' + enAccessSecret.length + ')' : 'NOT SET',
+    });
+
+    if (enKey && enSecret && enAccessToken && enAccessSecret) {
         clientEN = new TwitterApi({
-            appKey: process.env.TWITTER_API_KEY,
-            appSecret: process.env.TWITTER_API_SECRET,
-            accessToken: process.env.TWITTER_ACCESS_TOKEN,
-            accessSecret: process.env.TWITTER_ACCESS_SECRET,
+            appKey: enKey,
+            appSecret: enSecret,
+            accessToken: enAccessToken,
+            accessSecret: enAccessSecret,
         });
+        console.log('[Twitter] ENクライアント初期化完了');
+    } else {
+        console.warn('[Twitter] ENクライアント: 環境変数不足のため初期化スキップ');
     }
 
     // 日本語アカウント
-    if (process.env.TWITTER_API_KEY_JA && process.env.TWITTER_API_SECRET_JA &&
-        process.env.TWITTER_ACCESS_TOKEN_JA && process.env.TWITTER_ACCESS_SECRET_JA) {
+    const jaKey = (process.env.TWITTER_API_KEY_JA || '').trim();
+    const jaSecret = (process.env.TWITTER_API_SECRET_JA || '').trim();
+    const jaAccessToken = (process.env.TWITTER_ACCESS_TOKEN_JA || '').trim();
+    const jaAccessSecret = (process.env.TWITTER_ACCESS_SECRET_JA || '').trim();
+
+    console.log('[Twitter] ENV check JA:', {
+        TWITTER_API_KEY_JA: jaKey ? jaKey.substring(0, 6) + '...(' + jaKey.length + ')' : 'NOT SET',
+        TWITTER_API_SECRET_JA: jaSecret ? jaSecret.substring(0, 6) + '...(' + jaSecret.length + ')' : 'NOT SET',
+        TWITTER_ACCESS_TOKEN_JA: jaAccessToken ? jaAccessToken.substring(0, 6) + '...(' + jaAccessToken.length + ')' : 'NOT SET',
+        TWITTER_ACCESS_SECRET_JA: jaAccessSecret ? jaAccessSecret.substring(0, 6) + '...(' + jaAccessSecret.length + ')' : 'NOT SET',
+    });
+
+    if (jaKey && jaSecret && jaAccessToken && jaAccessSecret) {
         clientJA = new TwitterApi({
-            appKey: process.env.TWITTER_API_KEY_JA,
-            appSecret: process.env.TWITTER_API_SECRET_JA,
-            accessToken: process.env.TWITTER_ACCESS_TOKEN_JA,
-            accessSecret: process.env.TWITTER_ACCESS_SECRET_JA,
+            appKey: jaKey,
+            appSecret: jaSecret,
+            accessToken: jaAccessToken,
+            accessSecret: jaAccessSecret,
         });
+        console.log('[Twitter] JAクライアント初期化完了');
+    } else {
+        console.warn('[Twitter] JAクライアント: 環境変数不足のため初期化スキップ');
     }
 }
 initClients();
@@ -51,6 +79,11 @@ function getClient(account) {
 // ツイート投稿
 async function postTweet(text, imagePath, account = 'en') {
     try {
+        // テキストの正規化
+        if (text && typeof text === 'object') {
+            text = text.text || text.caption || JSON.stringify(text);
+        }
+        text = String(text || '').trim();
         console.log(`[Twitter] 投稿開始 account=${account} text=${text.substring(0, 50)}...`);
         const tw = getClient(account);
         if (!tw) {
