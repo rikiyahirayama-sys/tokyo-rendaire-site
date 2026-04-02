@@ -30,7 +30,6 @@ app.use('/blog', express.static(path.join(__dirname, 'blog')));
 
 // ===== APIルーティング =====
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/settings', require('./routes/auth'));
 app.use('/api/cast', require('./routes/cast'));
 app.use('/api/sns', require('./routes/sns'));
 app.use('/api/blog', require('./routes/blog'));

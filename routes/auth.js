@@ -135,6 +135,7 @@ router.post('/settings', (req, res) => {
 // ===== POST /settings/test =====
 router.post('/settings/test', async (req, res) => {
     const { service } = req.body;
+    console.log(`[Auth] /settings/test called, service=${service}`);
 
     try {
         switch (service) {
